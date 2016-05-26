@@ -19,7 +19,7 @@ library(plyr)
 library(taxize)
 library(rentrez)
 
-MCLab=function(primer_f, primer_r, name_primer_f, name_primer_r, source, username, password, desdir,folder,local_path, local, nt_search){
+MC_Function=function(primer_f, primer_r, name_primer_f, name_primer_r, source, username, password, desdir,folder,local_path, local, nt_search){
   packageStartupMessage("Creating Folders...", appendLF = FALSE)
   setwd(desdir)
   if (!file.exists(file.path(desdir,'seq',folder,'raw'))){

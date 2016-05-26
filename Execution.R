@@ -1,6 +1,6 @@
 desdir="/home/mclab/R/git/M.C.Lab" 
 setwd(desdir)
-source('./MCLab_Function.R') 
+source('./MC_Function.R') 
 
 time=proc.time()[3]
 #######################
@@ -23,7 +23,7 @@ nt_search=TRUE
 ##############  #######
 #############   #######
 ############   #######
-MCLab(primer_f, primer_r, name_primer_f, name_primer_r, source, username, password, desdir,folder,local_path, local, nt_search) ###
+MC_Function(primer_f, primer_r, name_primer_f, name_primer_r, source, username, password, desdir,folder,local_path, local, nt_search) ###
 #############   #######
 ##############  #######
 #######################
