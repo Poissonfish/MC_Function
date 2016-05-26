@@ -93,11 +93,11 @@ class FrameLayout extends JFrame implements ActionListener{
 		}
 		
 		r.eval("setwd(desdir)");
-		r.eval("source('./MCLab_Function.R')");
-		r.eval("print(desdir)");
-		r.eval("print(folder)");
+		r.eval("source('./MC_Function.R')");
+		//r.eval("print(desdir)");
+		//r.eval("print(folder)");
 		r.eval("time=proc.time()[3]");		
-		r.eval("MCLab(primer_f, primer_r, name_primer_f, name_primer_r, source, username, password, desdir,folder,local_path, local, nt_search)");
+		r.eval("MC_Function(primer_f, primer_r, name_primer_f, name_primer_r, source, username, password, desdir,folder,local_path, local, nt_search)");
 		r.eval("proc.time()[3]-time");		
 	}	
 
