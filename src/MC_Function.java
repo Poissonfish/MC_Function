@@ -1,12 +1,19 @@
 import org.rosuda.JRI.*;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.util.Vector;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import net.miginfocom.swing.MigLayout;
+
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseEvent;
 
 public class MC_Function {
 	public static void main(String[] args){        
@@ -17,6 +24,7 @@ public class MC_Function {
 		main.show();
 	}
 }
+
 
 class FrameLayout extends JFrame implements ActionListener{
 	int loft = 2;
@@ -56,9 +64,15 @@ class FrameLayout extends JFrame implements ActionListener{
 	int value;
 	int value2;
 	
-	Rengine r = new Rengine(new String[]{"--no-save"}, false, new console());
-	
-	public void submit(){
+	Rengine r = new Rengine(new String[]{"--no-save"}, false, new TextConsole2());
+
+	JTextArea textArea;
+    static final String NEWLINE = System.getProperty("line.separator");
+    String con;
+    PrintStream out ;
+    
+	public void submit() {	
+		r.eval("print('start')");
 		String desdir = wd.getText();
 		String fold = folder.getText();
 		String primer_f = pf.getText();
@@ -80,29 +94,108 @@ class FrameLayout extends JFrame implements ActionListener{
 		r.eval("username='"+uss+"'");		
 		r.eval("password='"+pdd+"'");
 		r.eval("desdir='"+desdir+"'");
-
+		
 		if(loft==1){
 			r.eval("local=FALSE");
-		}else if (loft==2){
+		}else{
 			r.eval("local=TRUE");
 		}
-		if(gs==-1){
-			r.eval("nt_search=TRUE");
-		}else if (gs==1){
-			r.eval("nt_search=FALSE");
-		}
-		
 		r.eval("setwd(desdir)");
-		r.eval("source('./MC_Function.R')");
-		//r.eval("print(desdir)");
-		//r.eval("print(folder)");
-		r.eval("time=proc.time()[3]");		
-		r.eval("MC_Function(primer_f, primer_r, name_primer_f, name_primer_r, source, username, password, desdir,folder,local_path, local, nt_search)");
-		r.eval("proc.time()[3]-time");		
+		r.eval("time=proc.time()[3]");
+		r.eval("source('./RScripts/Library.R')");
+	}
+	public void submit2(){
+		r.eval("print('Creating')");
+		output("Creating Folders...");
+		System.out.println("Creating");
+		r.eval("source('./RScripts/CreatingFolders.R')");
+		output("Done!");
+	}
+	
+	public void submit3(){
+		newoutput("Primer Analyzing...");
+		System.out.println("Primer");
+		r.eval("source('./RScripts/PrimerAnalyzing.R')");
+		output("Done!");
+	}
+	public void submit4(){
+		if(loft==1){
+			System.out.println("no");
+			newoutput("File Downloading...");
+			r.eval("source('./RScripts/FileDownloading.R')");
+			output("Done!");
+		}
+	}
+	public void submit5(){
+		newoutput("Renaming...");
+		System.out.println("Renaming");
+		r.eval("setwd(desdir)");
+		r.eval("source('./RScripts/Renaming.R')");
+		output("Done!");
+	}
+	public void submit6(){
+		newoutput("Vector Screening...");
+		System.out.println("Vector");
+		r.eval("source('../../../RScripts/VectorScreening.R')");
+		output("Done!");
+	}
+	public void submit7(){
+		newoutput("Candidate Sequences Evaluating...");
+		System.out.println("Candidate");
+		r.eval("source('../../../RScripts/CandidateSequence.R')");
+		output("Done!");
+	}
+	public void submit8(){
+		newoutput("Sequences Alignment...");
+		System.out.println("Sequences");		
+		r.eval("source('../../../RScripts/SequenceAlignment.R')");
+		output("Done!");
+	}
+	/*
+    public void tew(){
+		System.out.println("Rtew");	
+		r.eval("print('tew')");
+    }*/
+	public void submit9(){
+	//	r.eval("Sys.sleep(10)");
+		if(gs==-1){
+			newoutput("Fetching sequence information....");
+			System.out.println("Fetching");				
+			r.eval("nt_search=TRUE");
+			r.eval("source('../../..//RScripts/BLAST.R')");
+			output("Done!");
+		}
+	}
+	public void submit10(){
+		newoutput("Exporting Summary Information...");
+		System.out.println("Summary");				
+		r.eval("source('../../..//RScripts/Summary.R')");	
+		output("Done!");
+		r.eval("t=proc.time()[3]-time");
+		
+		r.eval("hr=t%/%3600");
+		r.eval("hrre=t%%3600");
+		r.eval("min=hrre%/%60");
+		r.eval("sec=hrre%%60");
+		REXP time=r.eval("paste0('It tooks ', hr, ' hour ', min, ' minute ', sec, ' second to complete.' )");
+		String newtime=((REXP)time).asString();		
+		output(newtime);
+		
 	}	
 
-	public FrameLayout(){	
-		wd.setText("/home/mclab/R/git/M.C.Lab");
+
+	public FrameLayout(){
+		
+		textArea = new JTextArea();
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        
+		System.setOut(new PrintStream(new RConsoleOutputStream(r, 0)));
+		System.setErr(new PrintStream(new RConsoleOutputStream(r,1 )));
+		
+		wd.setText("/home/mclab/workspace/M.C.Function");
 		sc.setText("ftp://140.109.56.5/");
 		us.setText("rm208");
 		pw.setText("167cm");
@@ -172,22 +265,48 @@ class FrameLayout extends JFrame implements ActionListener{
 				"NCBI BLAST"));
 
 		JPanel mainPanel= new JPanel(new MigLayout("fill","[grow][]","[][grow][]"));
-		mainPanel.setPreferredSize(new Dimension(590,480));
-	
+		mainPanel.setPreferredSize(new Dimension(590,550));
+	/*
+		scrollPane.setPreferredSize(new Dimension(590, 200));
+		*/
 		mainPanel.add(srPanel,"dock north");		
 		mainPanel.add(wdPanel,"cell 0 0, grow");		
 		mainPanel.add(prPanel,"cell 0 1, grow");
 		mainPanel.add(ruPanel,"cell 1 0 1 3, grow");			
-		mainPanel.add(gePanel,"cell 0 2, grow");
+		mainPanel.add(gePanel,"cell 0 2, grow");	
+		mainPanel.add(scrollPane,"dock south");
 		
 		
-		this.setContentPane(mainPanel);		
+
+		/*
+        MessageConsole mc = new MessageConsole(textArea);
+        mc.redirectOut();
+        mc.redirectErr(Color.RED, null);
+        mc.setMessageLines(100);
+		*/
+		this.setContentPane(mainPanel);	
+
+		
 	}
 	
 	public void actionPerformed(ActionEvent ae){
 	      Object source = ae.getSource();	
 	      if (source == start){
+	    	  /*
 	        submit();
+			submit2();
+			submit3();
+			submit4();
+			submit5();
+			submit6();
+			submit7();
+			submit8();
+			*/
+	    	  
+	    	tew();
+			submit9();
+			submit10();
+
 	      }else if (source == buttononline){
 	    	loft=1;  
 	    	lp.setEnabled(false);
@@ -218,79 +337,19 @@ class FrameLayout extends JFrame implements ActionListener{
 			};
 		 }
 	 }
+	
+    void newoutput(String eventDescription) {
+        textArea.append(NEWLINE+
+        				eventDescription);
+        textArea.setCaretPosition(textArea.getDocument().getLength());
+    }
+    void output(String eventDescription) {
+        textArea.append(eventDescription);
+        textArea.setCaretPosition(textArea.getDocument().getLength());
+    }
+    
 }
 
-class console implements RMainLoopCallbacks
-{
-    JFrame f;
-	
-    public JTextArea textarea = new JTextArea();	
-    JScrollPane logScroll = new JScrollPane(textarea,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    
-    public console() {   	
-        f = new JFrame();
-        f.setLocation(680,-100);
-        f.getContentPane().add(new JScrollPane(textarea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
-        f.setSize(new Dimension(450,450));
-       
-        f.show();
-    }
-    
- 	
-    
-    public void rWriteConsole(Rengine re, String text, int oType) {
-        textarea.append(text);
-    }
-    
-    public void rBusy(Rengine re, int which) {
-        System.out.println("rBusy("+which+")");
-    }
-    
-    public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-        System.out.print(prompt);
-        try {
-            BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
-            String s=br.readLine();
-            return (s==null||s.length()==0)?s:s+"\n";
-        } catch (Exception e) {
-            System.out.println("jriReadConsole exception: "+e.getMessage());
-        }
-        return null;
-    }
-    
-    public void rShowMessage(Rengine re, String message) {
-        System.out.println("rShowMessage \""+message+"\"");
-    }
-    
-    public String rChooseFile(Rengine re, int newFile) {
-	FileDialog fd = new FileDialog(f, (newFile==0)?"Select a file":"Select a new file", (newFile==0)?FileDialog.LOAD:FileDialog.SAVE);
-	fd.show();
-	String res=null;
-	if (fd.getDirectory()!=null) res=fd.getDirectory();
-	if (fd.getFile()!=null) res=(res==null)?fd.getFile():(res+fd.getFile());
-	return res;
-    }
-    
-    public void   rFlushConsole (Rengine re) {
-	}
-    
-    public void   rLoadHistory  (Rengine re, String filename) {
-    }			
-    
-    public void   rSaveHistory  (Rengine re, String filename) {
-    }			
-}
-	
-/*
-JFileChooser fileChooser = new JFileChooser();
-//fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-int returnValue = fileChooser.showOpenDialog(null);
-if (returnValue == JFileChooser.APPROVE_OPTION) {
-  File selectedFile = fileChooser.getSelectedFile();
-  System.out.println(selectedFile.getName());
-  //File selectedFile = fileChooser.getCurrentDirectory();
-  System.out.println(selectedFile.getAbsolutePath());
-*/
-  
+
 
 
