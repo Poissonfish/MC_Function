@@ -47,8 +47,7 @@ hr=t%/%3600
 hrre=t%%3600
 min=hrre%/%60
 sec=hrre%%60
-
-paste0("It tooks ", hr, " hour ", min, " minute ", sec, " second to complete." )
+text=paste0("It tooks ", hr, " hour ", min, " minute ", sec, " second to complete." )
 
 #######################
 folder='ch11-6'
