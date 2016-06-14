@@ -67,7 +67,7 @@ class TextConsole2 extends JPanel implements RMainLoopCallbacks
 public class rtest2 {
     public static void main(String[] args) {
         System.out.println("Press <Enter> to continue (time to attach the debugger if necessary)");
-        try { System.in.read(); } catch(Exception e) {};
+       // try { System.in.read(); } catch(Exception e) {};
         System.out.println("Creating Rengine (with arguments)");
 		Rengine re=new Rengine(new String[]{"--no-save"}, true, new TextConsole2());
         System.out.println("Rengine created, waiting for R");

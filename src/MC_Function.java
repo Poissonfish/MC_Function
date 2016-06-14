@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.util.Random;
 import java.util.Vector;
 import java.util.logging.Logger;
+import java.util.prefs.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -27,6 +28,72 @@ public class MC_Function {
 	}
 }
 
+class settingframe extends JFrame implements ActionListener{
+	JButton ok= new JButton("OK");
+	JButton cancel= new JButton("Cancel");
+	JLabel name= new JLabel("Names");
+	JLabel sequence= new JLabel("Sequences");
+	JTextField[] ps= new JTextField[15];
+	JTextField[] pn= new JTextField[15];
+	JPanel panel;
+	private String[] sn= new String[15];
+	private String[] sp= new String[15];
+	Preferences prefsdemo;
+	
+	public settingframe(String[] sn, String[] sp){
+		panel= new JPanel(new MigLayout());
+		panel.add(name);
+		panel.add(sequence,"wrap");
+		for (int i=0; i<15; i++){
+			ps[i]= new JTextField(20);
+			pn[i]= new JTextField(5);
+			panel.add(pn[i]);
+			panel.add(ps[i],"wrap");
+		}
+		panel.add(ok);
+		panel.add(cancel);
+		
+		ok.addActionListener(this);
+		cancel.addActionListener(this);
+		
+		prefsdemo = Preferences.userRoot().node("/com/sunway/spc");  
+	    for (int i = 0; i < 15; i++) {               
+            ps[i].setText(prefsdemo.get("name"+i, "a "));
+            pn[i].setText(prefsdemo.get("seq"+i, "a "));
+        }  
+        
+		this.setContentPane(panel);
+		this.pack();
+		this.setTitle("Primer Setting Panel");
+		this.show();
+	}
+	public void actionPerformed(ActionEvent ae){
+	      Object source = ae.getSource();	
+	      if (source == ok){
+	    	  for (int i=0; i<15; i++){
+	    		sp[i]=ps[i].getText();
+	    		sn[i]=pn[i].getText();
+	    	  }
+
+	          
+	          prefsdemo.addPreferenceChangeListener(new PreferenceChangeListener() {  	                
+	              @Override  
+	              public void preferenceChange(PreferenceChangeEvent evt) {  
+	                  System.out.println(evt.getKey()+" = "+evt.getNewValue());  
+	              }  
+	          });   
+	          for (int i = 0; i < 15; i++) {  
+	              prefsdemo.put("name"+i, sn[i]);  
+	              prefsdemo.put("seq"+i, sp[i]);
+	          }  
+	          
+	    	  this.dispose();
+	      }else if (source == cancel){
+	    	  this.dispose();
+	      }
+	}
+	
+}
 
 class FrameLayout extends JFrame implements ActionListener{
 	int loft = 2;
@@ -74,172 +141,18 @@ class FrameLayout extends JFrame implements ActionListener{
     PrintStream out ;
     
     Rengine r;
+    Boolean library=false;
     
-    static class LoggingConsole implements RMainLoopCallbacks {
-        private JTextArea textarea;
-
-        LoggingConsole(JTextArea textarea) {
-        	this.textarea= textarea;
-        }
-
-        public void rWriteConsole(Rengine re, String text, int oType) {
-        	textarea.append(text+NEWLINE);
-        	textarea.setCaretPosition(textarea.getDocument().getLength());
-        }
-
-        public void rBusy(Rengine re, int which) {
-            System.out.println("rBusy("+which+")");
-        }
-        
-
-        public void rShowMessage(Rengine re, String message) {
-        	textarea.append(message+NEWLINE);
-        	textarea.setCaretPosition(textarea.getDocument().getLength());
-        }
-
-        public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-            return null;
-        }
-
-        public String rChooseFile(Rengine re, int newFile) {
-            return null;
-        }
-
-        public void rFlushConsole(Rengine re) {
-        }
-
-        public void rLoadHistory(Rengine re, String filename) {
-        }
-
-        public void rSaveHistory(Rengine re, String filename) {
-        }
-    }
-
-
-	public void submit() {	
-		String desdir = wd.getText();
-		String fold = folder.getText();
-		String primer_f = pf.getText();
-		String primer_r = pr.getText();
-		String name_primer_f = npf.getText();
-		String name_primer_r = npr.getText();
-		String local_path = lp.getText();
-		String source = sc.getText();
-		String uss = us.getText();
-		String pdd = pw.getText();
-		
-		r.eval("folder='"+fold+"'");
-		r.eval("primer_f='"+primer_f+"'");
-		r.eval("primer_r='"+primer_r+"'");
-		r.eval("name_primer_f='"+name_primer_f+"'");
-		r.eval("name_primer_r='"+name_primer_r+"'");
-		r.eval("local_path='"+local_path+"'");
-		r.eval("source='"+source+"'");	
-		r.eval("username='"+uss+"'");		
-		r.eval("password='"+pdd+"'");
-		r.eval("desdir='"+desdir+"'");
-			
-		if(loft==1){
-			r.eval("local=FALSE");
-		}else{
-			r.eval("local=TRUE");
-		}
-		r.eval("setwd(desdir)");
-		r.eval("source('./RScripts/Library.R')");
-		r.eval("time=proc.time()[3]");
-		
-		r.eval("ha= tryCatch( {print('hhhaaa')}, finally = {print('finallyyyyy')} )");
-    	REXP haa= r.eval("ha%>%as.character()");
-    	String haas=((REXP)haa).asString();
-    	r.eval("print('fi')");
-    
-	}
-	public void submit2(){
-		r.eval("print('Creating')");
-		output("Creating Folders...");
-		System.out.println("Creating");
-		r.eval("source('./RScripts/CreatingFolders.R')");
-		output("Done!");
-	}
+    String[] sn= new String[15];
+	String[] sp= new String[15];
 	
-	public void submit3(){
-		newoutput("Primer Analyzing...");
-		System.out.println("Primer");
-		r.eval("source('./RScripts/PrimerAnalyzing.R')");
-		output("Done!");
-	}
-	public void submit4(){
-		if(loft==1){
-			System.out.println("no");
-			newoutput("File Downloading...");
-			r.eval("source('./RScripts/FileDownloading.R')");
-			output("Done!");
-		}
-	}
-	public void submit5(){
-		newoutput("Renaming...");
-		System.out.println("Renaming");
-		r.eval("setwd(desdir)");
-		r.eval("source('./RScripts/Renaming.R')");
-		output("Done!");
-	}
-	public void submit6(){
-		newoutput("Vector Screening...");
-		System.out.println("Vector");
-		r.eval("source('../../../RScripts/VectorScreening.R')");
-		output("Done!");
-	}
-	public void submit7(){
-		newoutput("Candidate Sequences Evaluating...");
-		System.out.println("Candidate");
-		r.eval("source('../../../RScripts/CandidateSequence.R')");
-		output("Done!");
-	}
-	public void submit8(){
-		newoutput("Sequences Alignment...");
-		System.out.println("Sequences");		
-		r.eval("source('../../../RScripts/SequenceAlignment.R')");
-		output("Done!");
-	}
-	public void testf(){
-		r.eval("Sys.sleep(5)");
-	}
-	public void submit9(){
-	//	
-		if(gs==-1){
-			newoutput("Fetching sequence information....");
-			System.out.println("Fetching");				
-			r.eval("nt_search=TRUE");
-			r.eval("source('../../..//RScripts/BLAST.R')");
-			output("Done!");
-		}
-	}
-	public void submit10(){
-		newoutput("Exporting Summary Information...");
-		System.out.println("Summary");				
-		r.eval("source('../../..//RScripts/Summary.R')");	
-		output("Done!");
-		r.eval("t=proc.time()[3]-time");
-		r.eval("hr=t%/%3600");
-		r.eval("hrre=t%%3600");
-		r.eval("min=hrre%/%60");
-		r.eval("sec=hrre%%60");
-		REXP time=r.eval("paste0('It tooks ', hr, ' hour ', min, ' minute ', sec, ' second to complete.' )");
-		String newtime=((REXP)time).asString();		
-		output(newtime);
-	}	
-
-
 	public FrameLayout(){
 		textArea = new JTextArea();
         textArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        /*
-		System.setOut(new PrintStream(new RConsoleOutputStream(r, 0)));
-		System.setErr(new PrintStream(new RConsoleOutputStream(r,1 )));
-		*/
+        
 		wd.setText("/home/mclab/workspace/M.C.Function");
 		sc.setText("ftp://140.109.56.5/");
 		us.setText("rm208");
@@ -315,78 +228,159 @@ class FrameLayout extends JFrame implements ActionListener{
 		
 		mainPanel.add(wdPanel,"cell 0 0 2 1, grow");		
 		mainPanel.add(prPanel,"cell 0 1, grow");
-//		mainPanel.add(ruPanel,"cell 1 0 1 3, grow");			
-			
 		mainPanel.add(gePanel,"cell 1 1, grow");	
 		mainPanel.add(scrollPane,"dock east");
 		mainPanel.add(ruPanel,"dock south");
 		mainPanel.add(srPanel,"dock north");		
-		/*
-        MessageConsole mc = new MessageConsole(textArea);
-        mc.redirectOut();
-        mc.redirectErr(Color.RED, null);
-        mc.setMessageLines(100);
-		*/
+		
 		this.setContentPane(mainPanel);	
-		r = new Rengine(new String[]{"--no-save"}, false, new LoggingConsole(textArea));
-
-		r.eval("library(annotate)");
-	  	r.eval("library(Biostrings)");
-	  	r.eval("library(rBLAST)");
-	  	r.eval("library(rMSA)");
-	  	r.eval("library(devtools)");
-	  	r.eval("library(magrittr)");
-	  	r.eval("library(seqinr)");
-	  	r.eval("library(ape)");
-	  	r.eval("library(data.table)");
-	  	r.eval("library(lubridate)");
-	  	r.eval("library(RCurl)");
-	  	r.eval("library(magrittr)");
-	  	r.eval("library(R.utils)");
-	  	r.eval("library(downloader)");
-	  	r.eval("library(ggplot2)");
-	  	r.eval("library(gridExtra)");
-	  	r.eval("library(plyr)");
-	  	r.eval("library(taxize)");
-	  	r.eval("library(rentrez)");
-	  	r.eval("print('fffffi')");
+		r = new Rengine(new String[]{"--no-save"}, true, new rconsole(textArea));
+		System.setOut(new PrintStream(new RConsoleOutputStream(r, 0)));
+		System.setErr(new PrintStream(new RConsoleOutputStream(r, 1)));
+	 	
+	}
+	public void submit() {	
+		if(!library){
+			r.eval("library(annotate)");
+		  	r.eval("library(Biostrings)");
+		  	r.eval("library(rBLAST)");
+		  	r.eval("library(rMSA)");
+		  	r.eval("library(devtools)");
+		  	r.eval("library(magrittr)");
+		  	r.eval("library(seqinr)");
+		  	r.eval("library(ape)");
+		  	r.eval("library(data.table)");
+		  	r.eval("library(lubridate)");
+		  	r.eval("library(RCurl)");
+		  	r.eval("library(magrittr)");
+		  	r.eval("library(R.utils)");
+		  	r.eval("library(downloader)");
+		  	r.eval("library(ggplot2)");
+		  	r.eval("library(gridExtra)");
+		  	r.eval("library(plyr)");
+		  	r.eval("library(taxize)");
+		  	r.eval("library(rentrez)");
+		  	library=true;
+		}
+		String desdir = wd.getText();
+		String fold = folder.getText();
+		String primer_f = pf.getText();
+		String primer_r = pr.getText();
+		String name_primer_f = npf.getText();
+		String name_primer_r = npr.getText();
+		String local_path = lp.getText();
+		String source = sc.getText();
+		String uss = us.getText();
+		String pdd = pw.getText();
+		
+		r.eval("folder='"+fold+"'");
+		r.eval("primer_f='"+primer_f+"'");
+		r.eval("primer_r='"+primer_r+"'");
+		r.eval("name_primer_f='"+name_primer_f+"'");
+		r.eval("name_primer_r='"+name_primer_r+"'");
+		r.eval("local_path='"+local_path+"'");
+		r.eval("source='"+source+"'");	
+		r.eval("username='"+uss+"'");		
+		r.eval("password='"+pdd+"'");
+		r.eval("desdir='"+desdir+"'");
+			
+		if(loft==1){
+			r.eval("local=FALSE");
+		}else{
+			r.eval("local=TRUE");
+		}
+		r.eval("setwd(desdir)");
+		r.eval("source('./RScripts/Library.R')");
+		r.eval("time=proc.time()[3]");		
 	}
 	
 	public void actionPerformed(ActionEvent ae){
 	      Object source = ae.getSource();	
 	      if (source == start){
-	    
 	        submit();
-	        testf();
-	      /*
-			submit2();
-			submit3();
-			submit4();
-			submit5();
-			submit6();
-			submit7();
-			submit8();   
-			submit9();
-			submit10();
-*/
-	      }else if (source == load){
+	        r.eval("source('./RScripts/CreatingFolders.R')");
+	        output("Creating Folders..."); newoutput("Done!");
 			
+			r.eval("source('./RScripts/PrimerAnalyzing.R')");
+			output("Primer Analyzing..."); newoutput("Done!");
+			
+			if(loft==1){
+				r.eval("source('./RScripts/FileDownloading.R')");
+				output("File Downloading..."); newoutput("Done!");
+			}
+			
+			r.eval("setwd(desdir)");
+			r.eval("source('./RScripts/Renaming.R')");
+			output("Renaming..."); newoutput("Done!");
+			
+			r.eval("source('../../../RScripts/VectorScreening.R')");
+			output("Vector Screening..."); newoutput("Done!");
+			
+			r.eval("source('../../../RScripts/CandidateSequence.R')");
+			output("Candidate Sequences Evaluating..."); newoutput("Done!");
+					
+			r.eval("source('../../../RScripts/SequenceAlignment.R')");
+			output("Sequences Alignment..."); newoutput("Done!");
+			
+			if(gs==-1){			
+				r.eval("nt_search=TRUE");
+				r.eval("source('../../..//RScripts/BLAST.R')");
+				output("Fetching sequence information...."); newoutput("Done!");
+			}
+			
+			r.eval("source('../../..//RScripts/Summary.R')");	
+			output("Exporting Summary Information..."); newoutput("Done!");
+			
+			r.eval("t=proc.time()[3]-time");
+			r.eval("hr=t%/%3600");
+			r.eval("hrre=t%%3600");
+			r.eval("min=hrre%/%60");
+			r.eval("sec=hrre%%60");
+			REXP time=r.eval("paste0('It tooks ', hr, ' hour ', min, ' minute ', sec, ' second to complete.' )");
+			String newtime=((REXP)time).asString();		
+			newoutput(newtime);
+
+	      }else if (source == load){
+	    	 if(!library){
+	  			r.eval("library(annotate)");
+	  		  	r.eval("library(Biostrings)");
+	  		  	r.eval("library(rBLAST)");
+	  		  	r.eval("library(rMSA)");
+	  		  	r.eval("library(devtools)");
+	  		  	r.eval("library(magrittr)");
+	  		  	r.eval("library(seqinr)");
+	  		  	r.eval("library(ape)");
+	  		  	r.eval("library(data.table)");
+	  		  	r.eval("library(lubridate)");
+	  		  	r.eval("library(RCurl)");
+	  		  	r.eval("library(magrittr)");
+	  		  	r.eval("library(R.utils)");
+	  		  	r.eval("library(downloader)");
+	  		  	r.eval("library(ggplot2)");
+	  		  	r.eval("library(gridExtra)");
+	  		  	r.eval("library(plyr)");
+	  		  	r.eval("library(taxize)");
+	  		  	r.eval("library(rentrez)");
+	  		  	library=true;
+	  		}
+	    	  
 			String work=wd.getText();
 			r.eval("wdtest='"+work+"'");
-	    	r.eval("handle1= tryCatch( {setwd(wdtest)}, error=function(e){print(e)} )");
+	    	r.eval("handle1= tryCatch( {setwd(wdtest)}, error=function(e){e} )");
 	    	REXP handle1r= r.eval("handle1%>%as.character()");
 	    	String handle1rs=((REXP)handle1r).asString();
 	    	if(handle1rs.indexOf("Error")>=0){
-		  		 newoutput(handle1rs);
+	    		newoutput("Error in changing working directory, it's an invalid path.");
 		  		genesearch.setEnabled(false);
 	    	}else{
-	    		r.eval("print(getwd())");
-		    	r.eval("handle2= tryCatch( {t=blast(db='./db/nt') %>% capture.output()}, error=function(e){print(e)} )");
+	    		REXP showwd= r.eval("getwd()");
+		  	  	String showwds=((REXP)showwd).asString();
+		    	r.eval("handle2= tryCatch( {t=blast(db='./db/nt') %>% capture.output()}, error=function(e){e} )");
 		    	REXP handle2r= r.eval("handle2%>%as.character()");
 		  	  	String handle2rs=((REXP)handle2r).asString();
 		  	  	
 		  	  	if(handle2rs.indexOf("Error")>=0){
-			  		 newoutput(handle2rs);
+			  		newoutput("BLAST database does not exist at "+showwds);	
 			  		genesearch.setEnabled(false);
 			  	}else{
 				  	 r.eval("t2=t[4]%>% gsub('\\t','',.) %>%strsplit('; ')");
@@ -413,7 +407,8 @@ class FrameLayout extends JFrame implements ActionListener{
 				  	 newoutput("   "+db5s);
 				  	 newoutput("");
 				  	 newoutput("");
-				  	 newoutput("The operation environment is ready");  
+				  	 newoutput("The environment is ready");  
+				  	 newoutput("");newoutput("");
 				  	 genesearch.setEnabled(true);
 			  	}	
 	    	}
@@ -440,28 +435,29 @@ class FrameLayout extends JFrame implements ActionListener{
 		    	wd.setText(selectedfile.getAbsolutePath());
 		   	};
 	      }else if (source == browse2){
+	    	  /*
 		   	choose2.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			value2= choose2.showOpenDialog(null);
 			if (value2 == JFileChooser.APPROVE_OPTION){
 				File selectedfile = choose2.getSelectedFile();
 			    lp.setText(selectedfile.getAbsolutePath());
-			};
-		 }
+			};*/
+	    	JFrame ff= new settingframe(sn, sp);
+		 
+	     }
 	 }
 	
-    void output(String eventDescription) {
-        textArea.append(eventDescription);
+    void output(String text) {
+        textArea.append(text);
         textArea.setCaretPosition(textArea.getDocument().getLength());
     }
-    void newoutput(String eventDescription) {
-        textArea.append(eventDescription+NEWLINE);
+    void newoutput(String text) {
+        textArea.append(text+NEWLINE);
         textArea.setCaretPosition(textArea.getDocument().getLength());
-    }
-    public void rWriteConsole(Rengine r, String text, int oType) {
-    	textArea.append(text);
-    }
-    
-    
+    }    
+    public void testf(){
+		r.eval("Sys.sleep(5)");
+	}
 }
 
 

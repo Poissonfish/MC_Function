@@ -1,7 +1,7 @@
 library(RCurl)
 library(magrittr)
 
-setwd("/home/mclab/R/git/M.C.Lab/db/")
+setwd("/home/mclab/workspace/M.C.Function/db")
 db_names=getURL("ftp://ftp.ncbi.nlm.nih.gov/blast/db/",verbose=TRUE,ftp.use.epsv=TRUE, dirlistonly = TRUE) %>%
   strsplit("[\\\\]|[^[:print:]]",fixed = FALSE) %>%
   unlist() %>%
