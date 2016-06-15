@@ -37,8 +37,7 @@ public class rconsole implements RMainLoopCallbacks {
         }
         
         public void rShowMessage(Rengine re, String message) {
-        	textarea.append(message+NEWLINE);
-        	textarea.setCaretPosition(textarea.getDocument().getLength());
+        	  System.out.println("rShowMessage \""+message+"\"");
         }
         
         public String rChooseFile(Rengine re, int newFile) {

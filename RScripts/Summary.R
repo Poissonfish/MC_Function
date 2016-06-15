@@ -44,6 +44,8 @@ amn=aln.mis %>% gsub('_[FR].fasta','',.)
 data_summary$Result[data_summary$Seq_names %in% vmn]='Vector not found'
 data_summary$Result[data_summary$Seq_names %in% pmn]='Primer not found'
 data_summary$Result[data_summary$Seq_names %in% amn]='Alignment no hits'
-data_summary$Result[data_summary$Seq_names %in% seq.mis]='Annotation not found'
+if(nt_search){
+  data_summary$Result[data_summary$Seq_names %in% seq.mis]='Annotation not found'
+}
 data_summary$Result[data_summary$Seq_Length<100]='Too Short to blast'
 write.csv(data_summary,paste0('../summary_',folder,'.csv'))

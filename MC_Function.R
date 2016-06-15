@@ -488,7 +488,9 @@ MC_Function=function(primer_f, primer_r, name_primer_f, name_primer_r, source, u
   data_summary$Result[data_summary$Seq_names %in% vmn]='Vector not found'
   data_summary$Result[data_summary$Seq_names %in% pmn]='Primer not found'
   data_summary$Result[data_summary$Seq_names %in% amn]='Alignment no hits'
-  data_summary$Result[data_summary$Seq_names %in% seq.mis]='Annotation not found'
+  if(nt_search){
+    data_summary$Result[data_summary$Seq_names %in% seq.mis]='Annotation not found'
+  }
   data_summary$Result[data_summary$Seq_Length<100]='Too Short to blast'
   write.csv(data_summary,paste0('../summary_',folder,'.csv'))
   packageStartupMessage(paste0('Done! Program End! \n\n\nFiles Location: ',
