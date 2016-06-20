@@ -63,4 +63,5 @@ for (sn in 1:length(seq_names)){
     }
   }
 } 
+setwd(file.path(desdir,'seq',folder,'fasta.aln'))
 seq.aln= readDNAStringSet(list.files())

@@ -22,7 +22,8 @@ public class MC_Function {
 	public static void main(String[] args){        
 		JFrame main = new FrameLayout();
 		main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		main.setTitle("M.C.Lab");		
+		main.setTitle("MC_Function");	
+		main.setLocation(500,  250);
 		main.setResizable(false);
 		main.pack();
 		main.show();
@@ -36,11 +37,11 @@ class settingframe extends JFrame implements ActionListener{
 
 	JLabel name= new JLabel("Names");
 	JLabel sequence= new JLabel("Sequences");
-	JTextField[] ps= new JTextField[15];
-	JTextField[] pn= new JTextField[15];
+	JTextField[] ps= new JTextField[20];
+	JTextField[] pn= new JTextField[20];
 	JPanel panel;
-	String[] sn= new String[15];
-	String[] sp= new String[15];
+	String[] sn= new String[20];
+	String[] sp= new String[20];
 	JComboBox pf;
 	JComboBox pr;
 	Preferences prefsdemo;
@@ -54,7 +55,7 @@ class settingframe extends JFrame implements ActionListener{
 		panel= new JPanel(new MigLayout());
 		panel.add(name);
 		panel.add(sequence,"wrap");
-		for (int i=0; i<15; i++){
+		for (int i=0; i<20; i++){
 			ps[i]= new JTextField(20);
 			pn[i]= new JTextField(3);
 			panel.add(pn[i]);
@@ -69,7 +70,7 @@ class settingframe extends JFrame implements ActionListener{
 		reset.addActionListener(this);
 		
 		prefsdemo = Preferences.userRoot().node("/com/sunway/spc");  
-	    for (int i = 0; i < 15; i++) {               
+	    for (int i = 0; i < 20; i++) {               
             pn[i].setText(prefsdemo.get("name"+i, " "));
             ps[i].setText(prefsdemo.get(sn[i], " "));
         }  
@@ -82,7 +83,7 @@ class settingframe extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent ae){
 	      Object source = ae.getSource();	
 	      if (source == ok){
-	    	  for (int i=0; i<15; i++){
+	    	  for (int i=0; i<20; i++){
 	    		sp[i]=ps[i].getText();
 	    		sn[i]=pn[i].getText();
 	    		prefsdemo.put("name"+i, sn[i]);  
@@ -102,7 +103,7 @@ class settingframe extends JFrame implements ActionListener{
 	    	  this.dispose();
 	    	  
 	      }else if (source == reset){
-	    	  for (int i=0; i<15; i++){
+	    	  for (int i=0; i<20; i++){
 		    		ps[i].setText("");
 		    		pn[i].setText("C"+(i+1));
 		    	  }  
@@ -121,14 +122,13 @@ class FrameLayout extends JFrame implements ActionListener{
 	JButton start = new JButton("START");
 	JTextField wd = new JTextField(25);
 
-	String[] sn= new String[15];
-	String[] sp= new String[15];
+	String[] sn= new String[20];
+	String[] sp= new String[20];
 	JComboBox pf, pr;
 	JButton setpri = new JButton("Primer Setting");
 	JButton showpri = new JButton("Show Primer");
 	
-	//JTextField pf = new JTextField(15);
-	//JTextField pr = new JTextField(15);
+
 	JTextField npf = new JTextField(3);
 	JTextField npr = new JTextField(3);
 		
@@ -156,20 +156,20 @@ class FrameLayout extends JFrame implements ActionListener{
 	JButton browse2 = new JButton("Browse");
 	JFileChooser choose2 = new JFileChooser();
 	JButton load = new JButton("Connect to DateBase");
+	JButton blast = new JButton("<html> BLAST Local <br> Sequences </html>");
 	int value;
 	int value2;
 
 	JTextArea textArea;
     static final String NEWLINE = System.getProperty("line.separator");
-    String con;
-    PrintStream out ;
-    
+
+    PrintStream out ; 
     Rengine r;
     Boolean library=false;
 	
 	public FrameLayout(){
 		//Combolist
-		for (int i = 0; i < 15; i++) {               
+		for (int i = 0; i < 20; i++) {               
 	        sn[i]=prefsdemo.get("name"+i, " ");
 	        sp[i]=prefsdemo.get(sn[i], " ");
 	    }  
@@ -177,7 +177,6 @@ class FrameLayout extends JFrame implements ActionListener{
 		pf.addActionListener(this);   
 		pr = new JComboBox(sn);
 		pr.addActionListener(this); 
-		//
 		
 		textArea = new JTextArea();
         textArea.setEditable(false);
@@ -190,17 +189,20 @@ class FrameLayout extends JFrame implements ActionListener{
 		us.setText("rm208");
 		pw.setText("167cm");
 	
+		//blast.setFont(new Font("Ariashowpril", Font.BOLD, 40));
 		start.setFont(new Font("Ariashowpril", Font.BOLD, 40));
 		buttonlocal.setSelected(true);
 		us.setEnabled(false);
 		pw.setEnabled(false);
 		sc.setEnabled(false);
 		genesearch.setEnabled(false);
+		blast.setEnabled(false);
 		ButtonGroup ftplocal = new ButtonGroup();
 		ftplocal.add(buttononline);
 		ftplocal.add(buttonlocal);
 					
 		start.addActionListener(this);
+		blast.addActionListener(this);
 		browse.addActionListener(this);
 		browse2.addActionListener(this);
 		buttononline.addActionListener(this);
@@ -209,9 +211,10 @@ class FrameLayout extends JFrame implements ActionListener{
 		load.addActionListener(this);
 		setpri.addActionListener(this);
 		showpri.addActionListener(this);
-		
+			
 		JPanel ruPanel = new JPanel(new MigLayout("fill"));
 		ruPanel.add(start, "alignx c");
+		//ruPanel.add(blast, "alignx c");
 		//ruPanel.setBorder(new TitledBorder(new EtchedBorder(), ""));
 		
 		JPanel wdPanel = new JPanel(new MigLayout());
@@ -233,7 +236,6 @@ class FrameLayout extends JFrame implements ActionListener{
 		srPanel.add(pw, "cell 2 2");
 		
 		srPanel.add(buttonlocal, "cell 0 3");
-		//srPanel.add(FP, "cell 1 3");
 		srPanel.add(lp, "cell 1 3 2 1");
 		srPanel.add(browse2, "cell 3 3");
 		srPanel.setBorder(new TitledBorder(new EtchedBorder(), "Data Source"));
@@ -254,9 +256,11 @@ class FrameLayout extends JFrame implements ActionListener{
 		
 		prPanel.setBorder(new TitledBorder(new EtchedBorder(), "Primers Selection"));
 
-		JPanel gePanel= new JPanel(new MigLayout("filly"));
-		gePanel.add(load,"wrap");
-		gePanel.add(genesearch,"aligny c");
+		JPanel gePanel= new JPanel(new MigLayout("fill"));
+		gePanel.add(load,"wrap, align c, wrap");
+		
+		gePanel.add(genesearch,"align c");
+		gePanel.add(blast, "cell 1 0 1 2");
 		gePanel.setBorder(new TitledBorder(new EtchedBorder(), "NCBI BLAST"));
 
 		JPanel adPanel= new JPanel(new MigLayout("filly"));
@@ -264,18 +268,9 @@ class FrameLayout extends JFrame implements ActionListener{
 		adPanel.setBorder(new TitledBorder(new EtchedBorder(), "Advance"));
 		
 		JPanel mainPanel= new JPanel(new MigLayout(" fill","[][grow][grow][]","[][]"));
-		mainPanel.setPreferredSize(new Dimension(1100,470));
+		mainPanel.setPreferredSize(new Dimension(1100,500));
 		scrollPane.setPreferredSize(new Dimension(500, 0));
 		
-/*
-		mainPanel.add(srPanel,"cell 0 0 3 1, grow");
-		mainPanel.add(sfPanel,"cell 3 0, grow");
-		mainPanel.add(wdPanel,"cell 0 1 2 1, grow");
-		mainPanel.add(prPanel,"cell 2 1 2 1 , grow");
-		mainPanel.add(gePanel,"cell 0 2, grow");
-		mainPanel.add(scrollPane,"dock east");
-		mainPanel.add(ruPanel,"cell 1 2 3 1, grow");		
-	*/
 		mainPanel.add(scrollPane,"dock east");
 		mainPanel.add(srPanel,"dock north");
 		mainPanel.add(wdPanel,"cell 0 0 3 1, grow");
@@ -287,9 +282,9 @@ class FrameLayout extends JFrame implements ActionListener{
 		this.setContentPane(mainPanel);	
 		r = new Rengine(new String[]{"--no-save"}, true, new rconsole(textArea));
 		System.setOut(new PrintStream(new RConsoleOutputStream(r, 0)));
-		System.setErr(new PrintStream(new RConsoleOutputStream(r, 1)));
-	 	
+		System.setErr(new PrintStream(new RConsoleOutputStream(r, 1))); 	
 	}
+	
 	public void submit() {	
 		if(!library){
 			r.eval("library(annotate)");
@@ -350,6 +345,7 @@ class FrameLayout extends JFrame implements ActionListener{
 	    	textArea.setForeground(Color.BLACK);
 	        submit();
 	        Boolean err=false;
+	        Boolean errge=false;
 	        
 	        r.eval("catch= tryCatch( { source('./RScripts/CreatingFolders.R') }, error=function(e){e} )");
 	    	REXP rcatch= r.eval("catch%>%as.character()");
@@ -439,20 +435,37 @@ class FrameLayout extends JFrame implements ActionListener{
 	 	    	}else{
 	 	    		output("Sequences Alignment..."); newoutput("Done!");
 	 	    	}
-	    	}		
-			
-	    	if(!err&gs==-1){
-	    		r.eval("nt_search=TRUE");
-	    		r.eval("catch= tryCatch( { source('../../../RScripts/BLAST.R') }, error=function(e){e} )");
+	 	    	r.eval("wp=if(length(vec.mis)+length(pri.mis)+length(aln.mis)==length(seq)){"
+	    				+ "'Wrong primers used'"
+	    				+ "}else{"
+	    				+ "'nothing'");
 	 	    	rcatch= r.eval("catch%>%as.character()");
 	 	    	rcatchs=((REXP)rcatch).asString();
-	 	    	if(rcatchs.indexOf("Error")>=0){
-	 	    		textArea.setForeground(Color.RED);
-	 	    		newoutput(rcatchs);
-	 	    		err=true;
-	 	    	}else{
-	 	    		output("Fetching sequence information...."); newoutput("Done!");
-	 	    	}
+		    	if(rcatchs.indexOf("Wrong")>=0){
+		    		textArea.setForeground(Color.RED);
+		    		newoutput("Wrong primers used!");
+		    		err=true;
+		    	}
+	    	}		    	    		    	
+	    	
+	    	if(!err&gs==-1){	    		  		
+	    		r.eval("nt_search=TRUE");
+	 	    	for (int re=0; re<10; re++){
+		    		r.eval("catch= tryCatch( { source('../../../RScripts/BLAST.R') }, error=function(e){e} )");
+		 	    	rcatch= r.eval("catch%>%as.character()");
+		 	    	rcatchs=((REXP)rcatch).asString();
+	 	    		if(rcatchs.indexOf("Error")>=0){
+		 	    		newoutput(rcatchs);
+		 	    		if(re==9){newoutput("Please try again to continue BLAST by using 'BLAST Local Sequences'");}
+					  	r.eval("con=1");
+					  	r.eval("itemp=i");
+		 	    		errge=true;
+		 	    	}else{
+		 	    		output("Fetching sequence information...."); newoutput("Done!");
+		 	    		break;
+		 	    	}
+	 	    	}	 	    	
+	 	    	
 	    	}else{
 	    		r.eval("nt_search=FALSE");
 	    	}
@@ -480,7 +493,12 @@ class FrameLayout extends JFrame implements ActionListener{
 			newoutput(newtime);
 			newoutput("");
 		  	newoutput("");
-
+		  	if(!err& !errge){
+		  		textArea.setForeground(Color.BLUE);
+		  	} else if(!err& errge){
+		  		textArea.setForeground(Color.PINK);
+		  	}
+		  	
 	      }else if (source == load){
 	    	 if(!library){
 	  			r.eval("library(annotate)");
@@ -502,6 +520,8 @@ class FrameLayout extends JFrame implements ActionListener{
 	  		  	r.eval("library(plyr)");
 	  		  	r.eval("library(taxize)");
 	  		  	r.eval("library(rentrez)");
+	  		  	newoutput("REngine is ready");
+	  			newoutput(""); newoutput("");
 	  		  	library=true;
 	  		}
 	    	textArea.setForeground(Color.BLACK);
@@ -511,8 +531,10 @@ class FrameLayout extends JFrame implements ActionListener{
 	    	REXP handle1r= r.eval("handle1%>%as.character()");
 	    	String handle1rs=((REXP)handle1r).asString();
 	    	if(handle1rs.indexOf("Error")>=0){
+	    		textArea.setForeground(Color.RED);
 	    		newoutput("Error in changing working directory, it's an invalid path.");
 		  		genesearch.setEnabled(false);
+		  		blast.setEnabled(false);
 	    	}else{
 	    		REXP showwd= r.eval("getwd()");
 		  	  	String showwds=((REXP)showwd).asString();
@@ -521,8 +543,10 @@ class FrameLayout extends JFrame implements ActionListener{
 		  	  	String handle2rs=((REXP)handle2r).asString();
 		  	  	
 		  	  	if(handle2rs.indexOf("Error")>=0){
+		  	  		textArea.setForeground(Color.RED);
 			  		newoutput("BLAST database does not exist at "+showwds);	
 			  		genesearch.setEnabled(false);
+			  		blast.setEnabled(false);
 			  	}else{
 				  	 r.eval("t2=t[4]%>% gsub('\\t','',.) %>%strsplit('; ')");
 				  	 REXP db1=r.eval("t[2]%>% strsplit(': ')%>%(function(x){x[[1]][2]})");
@@ -530,7 +554,7 @@ class FrameLayout extends JFrame implements ActionListener{
 				  	 REXP db3=r.eval("t2[[1]][1]");
 				  	 REXP db4=r.eval("t2[[1]][2]");
 				  	 REXP db5=r.eval("t[6]%>% gsub('\\t','',.)%>%strsplit('Long')%>%(function(x){x[[1]][1]})%>%gsub('Date: ','',.)");
-				  	  	
+				  	 r.eval("con=-1");
 				  	 String db1s=((REXP)db1).asString();
 				  	 String db2s=((REXP)db2).asString();
 				  	 String db3s=((REXP)db3).asString();
@@ -548,21 +572,24 @@ class FrameLayout extends JFrame implements ActionListener{
 				  	 newoutput("   "+db5s);
 				  	 newoutput("");
 				  	 newoutput("");
-				  	 newoutput("The environment is ready");  
+				  	 newoutput("The database is ready");  
 				  	 newoutput("");newoutput("");
 				  	 genesearch.setEnabled(true);
+				  	 if(loft==2){blast.setEnabled(true);}
 			  	}	
 	    	}
 	    	
 	      }else if (source == buttononline){
 	    	loft=1;  
 	    	lp.setEnabled(false);
+	    	blast.setEnabled(false);
 	    	us.setEnabled(true);
 			pw.setEnabled(true);
 			sc.setEnabled(true);
 	      }else if (source == buttonlocal){
 	        loft=2;
 	        lp.setEnabled(true);
+	        if(genesearch.isEnabled()){blast.setEnabled(true);}
 	    	us.setEnabled(false);
 			pw.setEnabled(false);
 			sc.setEnabled(false);
@@ -583,10 +610,31 @@ class FrameLayout extends JFrame implements ActionListener{
 				lp.setText(selectedfile.getAbsolutePath());
 	    	}  
 	      }else if (source == setpri){
-	    	 JFrame ff= new settingframe(sn, sp, pf, pr);
+	    	JFrame ff= new settingframe(sn, sp, pf, pr);
+	    	ff.setLocation(450,  250);
+	    	ff.setResizable(false);
 		  }else if (source == showpri){
-			 System.out.println((String)pf.getSelectedItem()+": "+prefsdemo.get((String)pf.getSelectedItem(),"")); 
-	  	     System.out.println((String)pr.getSelectedItem()+": "+prefsdemo.get((String)pr.getSelectedItem(),"")); 
+			System.out.println((String)pf.getSelectedItem()+": "+prefsdemo.get((String)pf.getSelectedItem(),"")); 
+	  	    System.out.println((String)pr.getSelectedItem()+": "+prefsdemo.get((String)pr.getSelectedItem(),"")); 
+		  }else if (source == blast){
+			textArea.setForeground(Color.BLACK);
+			submit();
+			for (int re=0; re<10; re++){
+				r.eval("catch= tryCatch( { source('./RScripts/BLAST_seq.R') }, error=function(e){e} )");
+				REXP rcatch= r.eval("catch%>%as.character()");
+				String rcatchs=((REXP)rcatch).asString();
+ 	    		if(rcatchs.indexOf("Error")>=0){
+ 	    			textArea.setForeground(Color.RED);
+	 	    		newoutput(rcatchs);
+	 	    		newoutput("Please try again to continue BLAST by using 'BLAST Local Sequences'");
+				  	r.eval("con=1");
+				  	r.eval("itemp=i");
+	 	    	}else{
+	 	    		output("BLAST...."); newoutput("Done!");
+	 	    		textArea.setForeground(Color.BLUE);
+	 	    		break;
+	 	    	}
+ 	    	}		       
 		  }
 	    	
 	      /*

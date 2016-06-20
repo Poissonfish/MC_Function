@@ -18,11 +18,11 @@ if (nchr[1]!=nchr[2]){
   l_index= SN%>%nchar() == nchr[2]
   
   new_names[l_index]=paste0(SN[l_index] %>% substr(1,2),'-',
-                            SN[l_index] %>% substr(3,nchr[2]-2),'-',
+                            SN[l_index] %>% substr(3,4),'-',
                             SN[l_index] %>% substr(nchr[2]-1,nchr[2]),'_', FR[l_index])
   new_names[s_index]=paste0(SN[s_index] %>% substr(1,2),'-',
-                            SN[s_index] %>% substr(3,nchr[1]-1),'-',
-                            SN[s_index] %>% substr(nchr[1],nchr[1]),'_', FR[s_index])
+                            SN[s_index] %>% substr(3,4),'-',
+                            SN[s_index] %>% substr(5,nchr[1]),'_', FR[s_index])
   new_names=new_names%>%gsub('.seq','.fasta',.)
   
   for (j in 1:length(names)){
@@ -35,8 +35,8 @@ if (nchr[1]!=nchr[2]){
   }
 }else{
   new_names=paste0(SN %>% substr(1,2),'-',
-                   SN %>% substr(3,nchr[2]-1),'-',
-                   SN %>% substr(nchr[2],nchr[2]),'_',FR)
+                   SN %>% substr(3,4),'-',
+                   SN %>% substr(5,nchr[2]),'_',FR)
   new_names=new_names%>%gsub('.seq','.fasta',.)
   for (j in 1:length(names)){
     text=readLines(names[j])

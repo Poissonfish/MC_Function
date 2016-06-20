@@ -1,15 +1,17 @@
-#loop except
-db_nt <- blast(db="../../../db/nt") 
+setwd(desdir)
+db_nt <- blast(db= filePath(desdir,'db','nt') ) 
+setwd(local_path)
+seq.aln= readDNAStringSet(list.files())
 
 if(con==-1){
   i2=1
-  seq.mis=c() 
   report=data.frame()
 }else if(con==1){
   i2=itemp
 }
 
- #loop except
+
+
 options(download.file.method = "wininet")
 for (i in i2: length(seq.aln)){
   if (nchar(seq.aln[i])>100){
@@ -50,8 +52,9 @@ for (i in i2: length(seq.aln)){
                               rank=NA, Perc.Ident=NA,
                               Alignment.Length=NA, Mismatches=NA,
                               Gap.Openings=NA, Q.start=NA, Q.end=NA, S.start=NA, S.end=NA)
-      )
+                   )
     }
   }
-  write.csv(report,paste0('../Annotation.csv'),row.names = FALSE)
+  write.csv(report,paste0('./Annotation.csv'),row.names = FALSE)
 }
+

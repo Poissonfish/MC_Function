@@ -18,25 +18,25 @@ C13="TCGGGATTGGCCACAGCGTTGAC"
 
 time=proc.time()[3]
 #######################
-folder='rtest3'
+folder='rtest_11_10_2'
 #11-11 11-12
-primer_f=C1
-primer_r=C1
-name_primer_f='tttr'
-name_primer_r='rete'
+primer_f=C6
+primer_r=C7
+name_primer_f='R'
+name_primer_r='F'
 #######################
-local=TRUE
-local_path='/home/mclab/seqtest'
+local=FALSE
+local_path='/home/mclab/workspace/M.C.Function/seq/test_11_10/raw'
 #######################
-source="ftp://140.109.56.5/104DATA/0524/"
+source="ftp://140.109.56.5/104DATA/0520/"
 username="rm208"
 password="167cm"
 #######################
-nt_search=FALSE
+nt_search=TRUE
 #######################
 ##############  #######
 #############   #######
-############   #######
+s############   #######
 MC_Function(primer_f, primer_r, name_primer_f, name_primer_r, source, username, password, desdir,folder,local_path, local, nt_search) ###
 #############   #######
 ##############  #######
