@@ -30,94 +30,14 @@ public class MC_Function {
 	}
 }
 
-class settingframe extends JFrame implements ActionListener{
-	JButton ok= new JButton("OK");
-	JButton cancel= new JButton("Cancel");
-	JButton reset= new JButton("Reset");
 
-	JLabel name= new JLabel("Names");
-	JLabel sequence= new JLabel("Sequences");
-	JTextField[] ps= new JTextField[20];
-	JTextField[] pn= new JTextField[20];
-	JPanel panel;
-	String[] sn= new String[20];
-	String[] sp= new String[20];
-	JComboBox pf;
-	JComboBox pr;
-	Preferences prefsdemo;
-	
-	public settingframe(String[] stringname, String[] stringprimer, JComboBox f, JComboBox r){
-		this.sn=stringname;
-		this.sp=stringprimer;
-		this.pf=f;
-		this.pr=r;
-		
-		panel= new JPanel(new MigLayout());
-		panel.add(name);
-		panel.add(sequence,"wrap");
-		for (int i=0; i<20; i++){
-			ps[i]= new JTextField(20);
-			pn[i]= new JTextField(3);
-			panel.add(pn[i]);
-			panel.add(ps[i],"span 2, wrap");
-		}
-		panel.add(ok);
-		panel.add(cancel);
-		panel.add(reset);
-		
-		ok.addActionListener(this);
-		cancel.addActionListener(this);
-		reset.addActionListener(this);
-		
-		prefsdemo = Preferences.userRoot().node("/com/sunway/spc");  
-	    for (int i = 0; i < 20; i++) {               
-            pn[i].setText(prefsdemo.get("name"+i, " "));
-            ps[i].setText(prefsdemo.get(sn[i], " "));
-        }  
-        
-		this.setContentPane(panel);
-		this.pack();
-		this.setTitle("Primer Setting Panel");
-		this.show();
-	}
-	public void actionPerformed(ActionEvent ae){
-	      Object source = ae.getSource();	
-	      if (source == ok){
-	    	  for (int i=0; i<20; i++){
-	    		sp[i]=ps[i].getText();
-	    		sn[i]=pn[i].getText();
-	    		prefsdemo.put("name"+i, sn[i]);  
-	            prefsdemo.put(sn[i], sp[i]);
-	            if(i!=14){pf.removeItemAt(0);
-	            		  pr.removeItemAt(0);
-	            		  }
-	            pf.addItem(sn[i]);
-	            pr.addItem(sn[i]);
-	    	  } 
-	    	  pf.removeItemAt(0);
-    		  pr.removeItemAt(0);
-	 
-	    	  this.dispose();
-	    	  
-	      }else if (source == cancel){
-	    	  this.dispose();
-	    	  
-	      }else if (source == reset){
-	    	  for (int i=0; i<20; i++){
-		    		ps[i].setText("");
-		    		pn[i].setText("C"+(i+1));
-		    	  }  
-	      }
-	}
-	
-}
 
 class FrameLayout extends JFrame implements ActionListener{
 	int loft = 2;
 	int gs = 1;
 	
 	Preferences prefsdemo = Preferences.userRoot().node("/com/sunway/spc");  
-    
+    //com/sunway/spc
 	String Path ="";
 	JButton start = new JButton("START");
 	JTextField wd = new JTextField(25);
@@ -127,7 +47,6 @@ class FrameLayout extends JFrame implements ActionListener{
 	JComboBox pf, pr;
 	JButton setpri = new JButton("Primer Setting");
 	JButton showpri = new JButton("Show Primer");
-	
 
 	JTextField npf = new JTextField(3);
 	JTextField npr = new JTextField(3);
@@ -157,6 +76,8 @@ class FrameLayout extends JFrame implements ActionListener{
 	JFileChooser choose2 = new JFileChooser();
 	JButton load = new JButton("Connect to DateBase");
 	JButton blast = new JButton("<html> BLAST Local <br> Sequences </html>");
+	JButton update = new JButton("<html> Database  <br> Update </html>");
+	
 	int value;
 	int value2;
 
@@ -166,6 +87,10 @@ class FrameLayout extends JFrame implements ActionListener{
     PrintStream out ; 
     Rengine r;
     Boolean library=false;
+    
+    //warning frame
+    Boolean proceed=false;
+	
 	
 	public FrameLayout(){
 		//Combolist
@@ -189,8 +114,8 @@ class FrameLayout extends JFrame implements ActionListener{
 		us.setText("rm208");
 		pw.setText("167cm");
 	
-		//blast.setFont(new Font("Ariashowpril", Font.BOLD, 40));
 		start.setFont(new Font("Ariashowpril", Font.BOLD, 40));
+		update.setFont(new Font("Ariashowpril", Font.BOLD, 16));
 		buttonlocal.setSelected(true);
 		us.setEnabled(false);
 		pw.setEnabled(false);
@@ -211,7 +136,8 @@ class FrameLayout extends JFrame implements ActionListener{
 		load.addActionListener(this);
 		setpri.addActionListener(this);
 		showpri.addActionListener(this);
-			
+		update.addActionListener(this);
+		
 		JPanel ruPanel = new JPanel(new MigLayout("fill"));
 		ruPanel.add(start, "alignx c");
 		//ruPanel.add(blast, "alignx c");
@@ -260,7 +186,8 @@ class FrameLayout extends JFrame implements ActionListener{
 		gePanel.add(load,"wrap, align c, wrap");
 		
 		gePanel.add(genesearch,"align c");
-		gePanel.add(blast, "cell 1 0 1 2");
+		gePanel.add(blast, "cell 1 0");
+		gePanel.add(update, "cell 1 1");
 		gePanel.setBorder(new TitledBorder(new EtchedBorder(), "NCBI BLAST"));
 
 		JPanel adPanel= new JPanel(new MigLayout("filly"));
@@ -346,159 +273,175 @@ class FrameLayout extends JFrame implements ActionListener{
 	        submit();
 	        Boolean err=false;
 	        Boolean errge=false;
-	        
-	        r.eval("catch= tryCatch( { source('./RScripts/CreatingFolders.R') }, error=function(e){e} )");
-	    	REXP rcatch= r.eval("catch%>%as.character()");
-	    	String rcatchs=((REXP)rcatch).asString();
-	    	if(rcatchs.indexOf("Error")>=0){
-	    		textArea.setForeground(Color.RED);
-	    		newoutput(rcatchs);
-	    		err=true;
-	    	}else{
-	    		output("Creating Folders..."); newoutput("Done!");
-	    	}
-	        
-	    	if(!err){
-	    		r.eval("catch= tryCatch( { source('./RScripts/PrimerAnalyzing.R') }, error=function(e){e} )");
-	 	    	rcatch= r.eval("catch%>%as.character()");
-	 	    	rcatchs=((REXP)rcatch).asString();
+	        Boolean go=true;
+	        if(gs==-1){
+	        	JFrame opf=new JFrame();
+	 	        String[] ops= {"Proceed?","Cancel"};
+	 			int opt=JOptionPane.showOptionDialog(opf,"Each sequence may took \nat least 3 mins to complete.","Everything correct?",
+	 					JOptionPane.YES_NO_OPTION,
+	 					JOptionPane.INFORMATION_MESSAGE, 
+	 					null, ops, "pokok");
+	 			if (opt==JOptionPane.YES_OPTION) {
+	 				go=true; 
+	 			}else if(opt==JOptionPane.NO_OPTION){
+	 				go=false;
+	 			}
+	        }
+	        if(go){
+	        	r.eval("catch= tryCatch( { source('./RScripts/CreatingFolders.R') }, error=function(e){e} )");
+	 	    	REXP rcatch= r.eval("catch%>%as.character()");
+	 	    	String rcatchs=((REXP)rcatch).asString();
 	 	    	if(rcatchs.indexOf("Error")>=0){
 	 	    		textArea.setForeground(Color.RED);
 	 	    		newoutput(rcatchs);
 	 	    		err=true;
 	 	    	}else{
-	 	    		output("Primer Analyzing..."); newoutput("Done!");
+	 	    		output("Creating Folders..."); newoutput("Done!");
 	 	    	}
-	    	}
-			
-	    	if(!err&loft==1){
-	    		r.eval("catch= tryCatch( { source('./RScripts/FileDownloading.R') }, error=function(e){e} )");
-	 	    	rcatch= r.eval("catch%>%as.character()");
-	 	    	rcatchs=((REXP)rcatch).asString();
-	 	    	if(rcatchs.indexOf("Error")>=0){
-	 	    		textArea.setForeground(Color.RED);
-	 	    		newoutput(rcatchs);
-	 	    		err=true;
-	 	    	}else{
-	 	    		output("File Downloading..."); newoutput("Done!");
+	 	        
+	 	    	if(!err){
+	 	    		r.eval("catch= tryCatch( { source('./RScripts/PrimerAnalyzing.R') }, error=function(e){e} )");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    	if(rcatchs.indexOf("Error")>=0){
+	 	 	    		textArea.setForeground(Color.RED);
+	 	 	    		newoutput(rcatchs);
+	 	 	    		newoutput("Invalid Primer Sequences");
+	 	 	    		err=true;
+	 	 	    	}else{
+	 	 	    		output("Primer Analyzing..."); newoutput("Done!");
+	 	 	    	}
 	 	    	}
-	    	}
-	    	
-	    	if(!err){
-	    		r.eval("setwd(desdir)");
-	    		r.eval("catch= tryCatch( { source('./RScripts/Renaming.R') }, error=function(e){e} )");
-	 	    	rcatch= r.eval("catch%>%as.character()");
-	 	    	rcatchs=((REXP)rcatch).asString();
-	 	    	if(rcatchs.indexOf("Error")>=0){
-	 	    		textArea.setForeground(Color.RED);
-	 	    		newoutput(rcatchs);
-	 	    		err=true;
-	 	    	}else{
-	 	    		output("Renaming..."); newoutput("Done!");
+	 			
+	 	    	if(!err&loft==1){
+	 	    		r.eval("catch= tryCatch( { source('./RScripts/FileDownloading.R') }, error=function(e){e} )");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    	if(rcatchs.indexOf("Error")>=0){
+	 	 	    		textArea.setForeground(Color.RED);
+	 	 	    		newoutput(rcatchs);
+	 	 	    		newoutput("Invalid URL Address");
+	 	 	    		err=true;
+	 	 	    	}else{
+	 	 	    		output("File Downloading..."); newoutput("Done!");
+	 	 	    	}
 	 	    	}
-	    	}
-		
-	    	if(!err){
-	    		r.eval("catch= tryCatch( { source('../../../RScripts/VectorScreening.R') }, error=function(e){e} )");
-	 	    	rcatch= r.eval("catch%>%as.character()");
-	 	    	rcatchs=((REXP)rcatch).asString();
-	 	    	if(rcatchs.indexOf("Error")>=0){
-	 	    		textArea.setForeground(Color.RED);
-	 	    		newoutput(rcatchs);
-	 	    		err=true;
-	 	    	}else{
-	 	    		output("Vector Screening..."); newoutput("Done!");
-	 	    	}
-	    	}
-			
-	    	if(!err){
-	    		r.eval("catch= tryCatch( { source('../../../RScripts/CandidateSequence.R') }, error=function(e){e} )");
-	 	    	rcatch= r.eval("catch%>%as.character()");
-	 	    	rcatchs=((REXP)rcatch).asString();
-	 	    	if(rcatchs.indexOf("Error")>=0){
-	 	    		textArea.setForeground(Color.RED);
-	 	    		newoutput(rcatchs);;
-	 	    		err=true;
-	 	    	}else{
-	 	    		output("Candidate Sequences Evaluating..."); newoutput("Done!");
-	 	    	}
-	    	}
-			
-	    	if(!err){
-	    		r.eval("catch= tryCatch( { source('../../../RScripts/SequenceAlignment.R') }, error=function(e){e} )");
-	 	    	rcatch= r.eval("catch%>%as.character()");
-	 	    	rcatchs=((REXP)rcatch).asString();
-	 	    	if(rcatchs.indexOf("Error")>=0){
-	 	    		textArea.setForeground(Color.RED);
-	 	    		newoutput(rcatchs);
-	 	    		err=true;
-	 	    	}else{
-	 	    		output("Sequences Alignment..."); newoutput("Done!");
-	 	    	}
-	 	    	r.eval("wp=if(length(vec.mis)+length(pri.mis)+length(aln.mis)==length(seq)){"
-	    				+ "'Wrong primers used'"
-	    				+ "}else{"
-	    				+ "'nothing'");
-	 	    	rcatch= r.eval("catch%>%as.character()");
-	 	    	rcatchs=((REXP)rcatch).asString();
-		    	if(rcatchs.indexOf("Wrong")>=0){
-		    		textArea.setForeground(Color.RED);
-		    		newoutput("Wrong primers used!");
-		    		err=true;
-		    	}
-	    	}		    	    		    	
-	    	
-	    	if(!err&gs==-1){	    		  		
-	    		r.eval("nt_search=TRUE");
-	 	    	for (int re=0; re<10; re++){
-		    		r.eval("catch= tryCatch( { source('../../../RScripts/BLAST.R') }, error=function(e){e} )");
-		 	    	rcatch= r.eval("catch%>%as.character()");
-		 	    	rcatchs=((REXP)rcatch).asString();
-	 	    		if(rcatchs.indexOf("Error")>=0){
-		 	    		newoutput(rcatchs);
-		 	    		if(re==9){newoutput("Please try again to continue BLAST by using 'BLAST Local Sequences'");}
-					  	r.eval("con=1");
-					  	r.eval("itemp=i");
-		 	    		errge=true;
-		 	    	}else{
-		 	    		output("Fetching sequence information...."); newoutput("Done!");
-		 	    		break;
-		 	    	}
-	 	    	}	 	    	
 	 	    	
-	    	}else{
-	    		r.eval("nt_search=FALSE");
-	    	}
-	    	
-	    	if(!err){
-	    		r.eval("catch= tryCatch( { source('../../../RScripts/Summary.R') }, error=function(e){e} )");
-	 	    	rcatch= r.eval("catch%>%as.character()");
-	 	    	rcatchs=((REXP)rcatch).asString();
-	 	    	if(rcatchs.indexOf("Error")>=0){
-	 	    		textArea.setForeground(Color.RED);
-	 	    		newoutput(rcatchs);
-	 	    		err=true;
-	 	    	}else{
-	 				output("Exporting Summary Information..."); newoutput("Done!");
+	 	    	if(!err){
+	 	    		r.eval("setwd(desdir)");
+	 	    		r.eval("catch= tryCatch( { source('./RScripts/Renaming.R') }, error=function(e){e} )");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    	if(rcatchs.indexOf("Error")>=0){
+	 	 	    		textArea.setForeground(Color.RED);
+	 	 	    		newoutput(rcatchs);
+	 	 	    		err=true;
+	 	 	    	}else{
+	 	 	    		output("Renaming..."); newoutput("Done!");
+	 	 	    	}
 	 	    	}
-	    	}	
-	    	
-			r.eval("t=proc.time()[3]-time");
-			r.eval("hr=t%/%3600");
-			r.eval("hrre=t%%3600");
-			r.eval("min=hrre%/%60");
-			r.eval("sec=hrre%%60");
-			REXP time=r.eval("paste0('It tooks ', hr, ' hour ', min, ' minute ', sec%>%round(2), ' second to complete.' )");
-			String newtime=((REXP)time).asString();		
-			newoutput(newtime);
-			newoutput("");
-		  	newoutput("");
-		  	if(!err& !errge){
-		  		textArea.setForeground(Color.BLUE);
-		  	} else if(!err& errge){
-		  		textArea.setForeground(Color.PINK);
-		  	}
-		  	
+	 		
+	 	    	if(!err){
+	 	    		r.eval("catch= tryCatch( { source('../../../RScripts/VectorScreening.R') }, error=function(e){e} )");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    	if(rcatchs.indexOf("Error")>=0){
+	 	 	    		textArea.setForeground(Color.RED);
+	 	 	    		newoutput(rcatchs);
+	 	 	    		err=true;
+	 	 	    	}else{
+	 	 	    		output("Vector Screening..."); newoutput("Done!");
+	 	 	    	}
+	 	    	}
+	 			
+	 	    	if(!err){
+	 	    		r.eval("catch= tryCatch( { source('../../../RScripts/CandidateSequence.R') }, error=function(e){e} )");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    	if(rcatchs.indexOf("Error")>=0){
+	 	 	    		textArea.setForeground(Color.RED);
+	 	 	    		newoutput(rcatchs);;
+	 	 	    		err=true;
+	 	 	    	}else{
+	 	 	    		output("Candidate Sequences Evaluating..."); newoutput("Done!");
+	 	 	    	}
+	 	    	}
+	 			
+	 	    	if(!err){
+	 	    		r.eval("catch= tryCatch( { source('../../../RScripts/SequenceAlignment.R') }, error=function(e){e} )");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    	if(rcatchs.indexOf("Error")>=0){
+	 	 	    		textArea.setForeground(Color.RED);
+	 	 	    		newoutput(rcatchs);
+	 	 	    		err=true;
+	 	 	    	}else{
+	 	 	    		output("Sequences Alignment..."); newoutput("Done!");
+	 	 	    	}
+	 	 	    	r.eval("wp=if(length(vec.mis)+length(pri.mis)+length(aln.mis)==length(seq)){"
+	 	    				+ "'Wrong primers used'"
+	 	    				+ "}else{"
+	 	    				+ "'nothing'");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 		    	if(rcatchs.indexOf("Wrong")>=0){
+	 		    		textArea.setForeground(Color.RED);
+	 		    		newoutput("Wrong primers used!");
+	 		    		err=true;
+	 		    	}
+	 	    	}		    	    		    	
+	 	    	
+	 	    	if(!err&gs==-1){	    		  		
+	 	    		r.eval("nt_search=TRUE");
+	 	 	    	for (int re=0; re<10; re++){
+	 		    		r.eval("catch= tryCatch( { source('../../../RScripts/BLAST.R') }, error=function(e){e} )");
+	 		 	    	rcatch= r.eval("catch%>%as.character()");
+	 		 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    		if(rcatchs.indexOf("Error")>=0){
+	 		 	    		newoutput(rcatchs);
+	 		 	    		if(re==9){newoutput("Please try again to continue BLAST by using 'BLAST Local Sequences'");}
+	 					  	r.eval("con=1");
+	 					  	r.eval("itemp=i");
+	 		 	    		errge=true;
+	 		 	    	}else{
+	 		 	    		output("Fetching sequence information...."); newoutput("Done!");
+	 		 	    		break;
+	 		 	    	}
+	 	 	    	}	 	    	
+	 	 	    	
+	 	    	}else{
+	 	    		r.eval("nt_search=FALSE");
+	 	    	}
+	 	    	
+	 	    	if(!err){
+	 	    		r.eval("catch= tryCatch( { source('../../../RScripts/Summary.R') }, error=function(e){e} )");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    	if(rcatchs.indexOf("Error")>=0){
+	 	 	    		textArea.setForeground(Color.RED);
+	 	 	    		newoutput(rcatchs);
+	 	 	    		err=true;
+	 	 	    	}else{
+	 	 				output("Exporting Summary Information..."); newoutput("Done!");
+	 	 	    	}
+	 	    	}	
+	 	    	
+	 			r.eval("t=proc.time()[3]-time");
+	 			r.eval("hr=t%/%3600");
+	 			r.eval("hrre=t%%3600");
+	 			r.eval("min=hrre%/%60");
+	 			r.eval("sec=hrre%%60");
+	 			REXP time=r.eval("paste0('It tooks ', hr, ' hour ', min, ' minute ', sec%>%round(2), ' second to complete.' )");
+	 			String newtime=((REXP)time).asString();		
+	 			newoutput(newtime);
+	 			newoutput("");
+	 		  	newoutput("");
+	 		  	if(!err& !errge){
+	 		  		textArea.setForeground(Color.BLUE);
+	 		  	} else if(!err& errge){
+	 		  		textArea.setForeground(Color.PINK);
+	 		  	}
+	        } 	
 	      }else if (source == load){
 	    	 if(!library){
 	  			r.eval("library(annotate)");
@@ -613,37 +556,122 @@ class FrameLayout extends JFrame implements ActionListener{
 	    	JFrame ff= new settingframe(sn, sp, pf, pr);
 	    	ff.setLocation(450,  250);
 	    	ff.setResizable(false);
-		  }else if (source == showpri){
-			System.out.println((String)pf.getSelectedItem()+": "+prefsdemo.get((String)pf.getSelectedItem(),"")); 
-	  	    System.out.println((String)pr.getSelectedItem()+": "+prefsdemo.get((String)pr.getSelectedItem(),"")); 
+		  }else if (source == update){
+			  JFrame opf=new JFrame();
+			  String[] ops= {"Proceed?","Cancel"};
+			  int opt=JOptionPane.showOptionDialog(opf,"It may took 3 hours\n to complete at least","Everything correct?",
+                      JOptionPane.YES_NO_OPTION,
+                      JOptionPane.INFORMATION_MESSAGE, 
+                      null, ops, "pokok");
+			  if (opt==JOptionPane.YES_OPTION) {
+				  if(!library){
+						r.eval("library(annotate)");
+					  	r.eval("library(Biostrings)");
+					  	r.eval("library(rBLAST)");
+					  	r.eval("library(rMSA)");
+					  	r.eval("library(devtools)");
+					  	r.eval("library(magrittr)");
+					  	r.eval("library(seqinr)");
+					  	r.eval("library(ape)");
+					  	r.eval("library(data.table)");
+					  	r.eval("library(lubridate)");
+					  	r.eval("library(RCurl)");
+					  	r.eval("library(magrittr)");
+					  	r.eval("library(R.utils)");
+					  	r.eval("library(downloader)");
+					  	r.eval("library(ggplot2)");
+					  	r.eval("library(gridExtra)");
+					  	r.eval("library(plyr)");
+					  	r.eval("library(taxize)");
+					  	r.eval("library(rentrez)");
+					  	library=true;
+					}
+					String desdir = wd.getText();
+					r.eval("desdir='"+desdir+"'");
+					r.eval("setwd(desdir)");
+					r.eval("time=proc.time()[3]");	
+					r.eval("catch= tryCatch( { source('./RScripts/Update.R') }, error=function(e){e} )");
+					REXP rcatch= r.eval("catch%>%as.character()");
+			    	String rcatchs=((REXP)rcatch).asString();
+		 	    	if(rcatchs.indexOf("Error")>=0){
+		 	    		textArea.setForeground(Color.RED);
+		 	    		newoutput(rcatchs);;
+		 	    	}else{
+		 	    		output("Database Updating..."); newoutput("Done!");
+		 	    		r.eval("handle2= tryCatch( {t=blast(db='./nt') %>% capture.output()}, error=function(e){e} )");
+				    	REXP handle2r= r.eval("handle2%>%as.character()");
+				  	  	String handle2rs=((REXP)handle2r).asString();
+				  	  	r.eval("t2=t[4]%>% gsub('\\t','',.) %>%strsplit('; ')");
+					  	REXP db1=r.eval("t[2]%>% strsplit(': ')%>%(function(x){x[[1]][2]})");
+					  	REXP db2=r.eval("t[3]%>% strsplit(': ')%>%(function(x){x[[1]][2]})");
+					  	REXP db3=r.eval("t2[[1]][1]");
+					  	REXP db4=r.eval("t2[[1]][2]");
+					  	REXP db5=r.eval("t[6]%>% gsub('\\t','',.)%>%strsplit('Long')%>%(function(x){x[[1]][1]})%>%gsub('Date: ','',.)");
+					  	r.eval("con=-1");
+					  	String db1s=((REXP)db1).asString();
+					  	String db2s=((REXP)db2).asString();
+					  	String db3s=((REXP)db3).asString();
+					  	String db4s=((REXP)db4).asString();
+					  	String db5s=((REXP)db5).asString();
+					  	newoutput("Location:");
+					  	newoutput("   "+db1s);
+					  	newoutput("");
+					  	newoutput("Database:");
+					  	newoutput("   "+db2s);
+					  	newoutput("   "+db3s);
+					  	newoutput("   "+db4s);
+					  	newoutput("");
+					  	newoutput("Date:");
+					  	newoutput("   "+db5s);
+					  	newoutput("");
+					  	newoutput("");
+					  	newoutput("The database is ready");  
+					  	newoutput("");newoutput("");
+					  	genesearch.setEnabled(true);
+					  	if(loft==2){blast.setEnabled(true);} 
+					  	r.eval("t=proc.time()[3]-time");
+						r.eval("hr=t%/%3600");
+						r.eval("hrre=t%%3600");
+						r.eval("min=hrre%/%60");
+						r.eval("sec=hrre%%60");
+						REXP time=r.eval("paste0('It tooks ', hr, ' hour ', min, ' minute ', sec%>%round(2), ' second to complete.' )");
+						String newtime=((REXP)time).asString();		
+						newoutput(newtime);
+						newoutput("");
+					  	newoutput("");
+					  	textArea.setForeground(Color.BLUE);
+				    	r.eval("setwd(desdir)");
+		 	    	}	    	
+			  }
+			  
 		  }else if (source == blast){
-			textArea.setForeground(Color.BLACK);
-			submit();
-			for (int re=0; re<10; re++){
-				r.eval("catch= tryCatch( { source('./RScripts/BLAST_seq.R') }, error=function(e){e} )");
-				REXP rcatch= r.eval("catch%>%as.character()");
-				String rcatchs=((REXP)rcatch).asString();
- 	    		if(rcatchs.indexOf("Error")>=0){
- 	    			textArea.setForeground(Color.RED);
-	 	    		newoutput(rcatchs);
-	 	    		newoutput("Please try again to continue BLAST by using 'BLAST Local Sequences'");
-				  	r.eval("con=1");
-				  	r.eval("itemp=i");
-	 	    	}else{
-	 	    		output("BLAST...."); newoutput("Done!");
-	 	    		textArea.setForeground(Color.BLUE);
-	 	    		break;
-	 	    	}
- 	    	}		       
+			  JFrame opf=new JFrame();
+			  String[] ops= {"Proceed?","Cancel"};
+			  int opt=JOptionPane.showOptionDialog(opf,"Each sequence may took \nat least 3 mins to complete.","Everything correct?",
+                      JOptionPane.YES_NO_OPTION,
+                      JOptionPane.INFORMATION_MESSAGE, 
+                      null, ops, "pokok");
+			  if (opt==JOptionPane.YES_OPTION) {
+				  textArea.setForeground(Color.BLACK);
+					submit();
+					for (int re=0; re<10; re++){
+						r.eval("catch= tryCatch( { source('./RScripts/BLAST_seq.R') }, error=function(e){e} )");
+						REXP rcatch= r.eval("catch%>%as.character()");
+						String rcatchs=((REXP)rcatch).asString();
+		 	    		if(rcatchs.indexOf("Error")>=0){
+		 	    			textArea.setForeground(Color.RED);
+			 	    		newoutput(rcatchs);
+			 	    		newoutput("Please try again to continue BLAST by using 'BLAST Local Sequences'");
+						  	r.eval("con=1");
+						  	r.eval("itemp=i");
+			 	    	}else{
+			 	    		output("BLAST...."); newoutput("Done!");
+			 	    		textArea.setForeground(Color.BLUE);
+			 	    		break;
+			 	    	}
+					}
+			  }		       
 		  }
-	    	
-	      /*
-	     }else if (source == pf|source == pr){
-	    	 
-	    	 JComboBox cb = (JComboBox)ae.getSource();
-		     String newSelection = (String)cb.getSelectedItem();
-		     System.out.println( newSelection+": "+prefsdemo.get(newSelection,""));
-		     */
 	}
 	
     void output(String text) {
@@ -662,5 +690,117 @@ class FrameLayout extends JFrame implements ActionListener{
 }
 
 
+class settingframe extends JFrame implements ActionListener{
+	JButton ok= new JButton("OK");
+	JButton cancel= new JButton("Cancel");
+	JButton reset= new JButton("Reset");
+
+	JLabel name= new JLabel("Names");
+	JLabel sequence= new JLabel("Sequences");
+	JTextField[] ps= new JTextField[20];
+	JTextField[] pn= new JTextField[20];
+	JPanel panel;
+	String[] sn= new String[20];
+	String[] sp= new String[20];
+	JComboBox pf;
+	JComboBox pr;
+	Preferences prefsdemo;
+	
+	Boolean pro;
+	
+	public settingframe(String[] stringname, String[] stringprimer, JComboBox f, JComboBox r){
+		this.sn=stringname;
+		this.sp=stringprimer;
+		this.pf=f;
+		this.pr=r;
+		
+		panel= new JPanel(new MigLayout());
+		panel.add(name);
+		panel.add(sequence,"wrap");
+		for (int i=0; i<20; i++){
+			ps[i]= new JTextField(20);
+			pn[i]= new JTextField(3);
+			panel.add(pn[i]);
+			panel.add(ps[i],"span 2, wrap");
+		}
+		panel.add(ok);
+		panel.add(cancel);
+		panel.add(reset);
+		
+		ok.addActionListener(this);
+		cancel.addActionListener(this);
+		reset.addActionListener(this);
+		
+		prefsdemo = Preferences.userRoot().node("/com/sunway/spc");  
+	    for (int i = 0; i < 20; i++) {               
+            pn[i].setText(prefsdemo.get("name"+i, " "));
+            ps[i].setText(prefsdemo.get(sn[i], " "));
+        }  
+        
+		this.setContentPane(panel);
+		this.pack();
+		this.setTitle("Primer Setting Panel");
+		this.show();
+	}
+	public void actionPerformed(ActionEvent ae){
+	      Object source = ae.getSource();	
+	      if (source == ok){
+	    	  for (int i=0; i<20; i++){
+	    		sp[i]=ps[i].getText();
+	    		sn[i]=pn[i].getText();
+	    		prefsdemo.put("name"+i, sn[i]);  
+	            prefsdemo.put(sn[i], sp[i]);
+	            if(i!=14){pf.removeItemAt(0);
+	            		  pr.removeItemAt(0);
+	            		  }
+	            pf.addItem(sn[i]);
+	            pr.addItem(sn[i]);
+	    	  } 
+	    	  pf.removeItemAt(0);
+    		  pr.removeItemAt(0);
+    		  
+	    	  this.dispose();
+	    	  
+	      }else if (source == cancel){
+	    	  this.dispose();
+	    	  
+	      }else if (source == reset){
+	    	  for (int i=0; i<20; i++){
+		    		ps[i].setText("");
+		    		pn[i].setText("C"+(i+1));
+		    	  }  
+	      }
+	}
+	
+}
 
 
+class warningframe extends JFrame implements ActionListener{
+	JButton k1= new JButton("Proceed!");
+	JButton c1= new JButton("Cancel");
+	Boolean proc;
+	JPanel panel;
+	
+	public warningframe(){
+		
+		panel= new JPanel(new MigLayout());
+		panel.add(k1);
+		panel.add(c1);
+		
+		k1.addActionListener(this);
+		c1.addActionListener(this);
+        
+		this.setContentPane(panel);
+		this.pack();
+		this.show();
+	}
+	public void actionPerformed(ActionEvent ae){
+	      Object source = ae.getSource();	
+	      if (source == k1){	
+	    	  proc=true;
+	    	  
+	      }else if (source == c1){
+	    	  proc=false;   	  
+	      }
+	}
+}
