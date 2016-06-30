@@ -21,18 +21,9 @@ public class rconsole implements RMainLoopCallbacks {
         }
         
         public void rBusy(Rengine re, int which) {
-            System.out.println("rBusy("+which+")");
-        }
+        }	
         
         public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-            System.out.print(prompt);
-            try {
-                BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
-                String s=br.readLine();
-                return (s==null||s.length()==0)?s:s+"\n";
-            } catch (Exception e) {
-                System.out.println("jriReadConsole exception: "+e.getMessage());
-            }
             return null;
         }
         

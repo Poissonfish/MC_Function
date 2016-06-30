@@ -47,6 +47,7 @@ for (k in 1: length(new_names)){
     }
   }
 }
+
 for (i in 1:length(seq.pure)){
   write.fasta(seq.pure[i]%>%as.DNAbin(), names(seq.pure[i])%>%gsub('.seq','',.), names(seq.pure[i])%>%gsub('.seq','.fasta',.))
 }

@@ -8,4 +8,9 @@ if (!file.exists(file.path(desdir,'seq',folder,'fasta'))){
 if (!file.exists(file.path(desdir,'seq',folder,'fasta.aln'))){
   dir.create(file.path(desdir,'seq',folder,'fasta.aln'),recursive = TRUE)
 }
-if(local){system(paste('cp -r',file.path(local_path,'.'),file.path(desdir,'seq',folder,'raw')))}
+if(local){
+  setwd(local_path)
+  system(paste('ls', file.path(local_path), '| grep -v "ab1$"|xargs cp -t', file.path(desdir,'seq',folder,'raw')))
+  setwd(desdir)
+  }
+

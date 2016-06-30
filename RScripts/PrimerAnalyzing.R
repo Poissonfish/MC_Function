@@ -1,5 +1,5 @@
-primer_f2=primer_f%>%DNAString()%>%reverseComplement()%>%as.character()
-primer_r2=primer_r%>%DNAString()%>%reverseComplement()%>%as.character()
+primer_f2=primer_f%>%gsub(' ','',.)%>%DNAString()%>%reverseComplement()%>%as.character()
+primer_r2=primer_r%>%gsub(' ','',.)%>%DNAString()%>%reverseComplement()%>%as.character()
 primerall=c(primer_f,primer_f2,primer_r,primer_r2)
 
 pro=c('N','R','Y','K','M','W')

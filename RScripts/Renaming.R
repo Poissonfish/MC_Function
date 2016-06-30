@@ -1,12 +1,19 @@
 setwd(file.path(desdir,'seq',folder,'raw'))
 names=list.files()
 new_names=names
+
+
 new_names[grep(name_primer_r,names)]= names[grep(name_primer_r,names)] %>% 
   gsub("^[0-9][0-9]\\.","",.) %>%
   gsub(paste0('(',name_primer_r,')'),"_R",.)
 new_names[grep(name_primer_f,names)]= names[grep(name_primer_f,names)] %>% 
   gsub("^[0-9][0-9]\\.","",.) %>%
   gsub(paste0('(',name_primer_f,')'),"_F",.)
+
+if(new_names[grep(name_primer_r,names)]%>%isEmpty()|new_names[grep(name_primer_f,names)]%>%isEmpty()){
+  suffix
+}
+
 
 new_names_split= new_names %>% strsplit('_') %>% unlist() 
 SN= new_names_split[seq(1,length(new_names_split),2)]  

@@ -35,6 +35,7 @@ public class MC_Function {
 class FrameLayout extends JFrame implements ActionListener{
 	int loft = 2;
 	int gs = 1;
+	int priuse =1;
 	
 	Preferences prefsdemo = Preferences.userRoot().node("/com/sunway/spc");  
     //com/sunway/spc
@@ -59,8 +60,10 @@ class FrameLayout extends JFrame implements ActionListener{
 	JRadioButton buttononline = new JRadioButton("Online(FTP)");
 	JRadioButton buttonlocal = new JRadioButton("Local");
 	JCheckBox genesearch = new JCheckBox("BLAST sequences");
+	JCheckBox primeruse = new JCheckBox("No Primer Used");
+	
 	JLabel WD = new JLabel("Working Directory");
-	JLabel FD = new JLabel("Folder Name");
+	JLabel FD = new JLabel("Task Name");
 	JLabel PF = new JLabel("Primer.1");
 	JLabel PR = new JLabel("Primer.2");
 	JLabel NPF = new JLabel("Forward");
@@ -74,7 +77,7 @@ class FrameLayout extends JFrame implements ActionListener{
 	JFileChooser choose = new JFileChooser();
 	JButton browse2 = new JButton("Browse");
 	JFileChooser choose2 = new JFileChooser();
-	JButton load = new JButton("Connect to DateBase");
+	JButton load = new JButton("Connect to Datebase");
 	JButton blast = new JButton("<html> BLAST Local <br> Sequences </html>");
 	JButton update = new JButton("<html> Database  <br> Update </html>");
 	
@@ -137,6 +140,7 @@ class FrameLayout extends JFrame implements ActionListener{
 		setpri.addActionListener(this);
 		showpri.addActionListener(this);
 		update.addActionListener(this);
+		primeruse.addActionListener(this);
 		
 		JPanel ruPanel = new JPanel(new MigLayout("fill"));
 		ruPanel.add(start, "alignx c");
@@ -178,7 +182,8 @@ class FrameLayout extends JFrame implements ActionListener{
 		prPanel.add(pf, "cell 1 0");
 		prPanel.add(PR, "cell 0 1");
 		prPanel.add(pr, "cell 1 1");
-		prPanel.add(setpri, "cell 0 2 2 2, alignx c");
+		prPanel.add(primeruse, "cell 2 1, aligny c");
+		prPanel.add(setpri, "cell 0 2 2 1, alignx c");
 		
 		prPanel.setBorder(new TitledBorder(new EtchedBorder(), "Primers Selection"));
 
@@ -208,6 +213,8 @@ class FrameLayout extends JFrame implements ActionListener{
 		
 		this.setContentPane(mainPanel);	
 		r = new Rengine(new String[]{"--no-save"}, true, new rconsole(textArea));
+//		r = new Rengine(new String[]{"--no-save"}, true, new TextConsole2());
+
 		System.setOut(new PrintStream(new RConsoleOutputStream(r, 0)));
 		System.setErr(new PrintStream(new RConsoleOutputStream(r, 1))); 	
 	}
@@ -259,6 +266,7 @@ class FrameLayout extends JFrame implements ActionListener{
 			
 		if(loft==1){
 			r.eval("local=FALSE");
+			
 		}else{
 			r.eval("local=TRUE");
 		}
@@ -270,13 +278,24 @@ class FrameLayout extends JFrame implements ActionListener{
 	      Object source = ae.getSource();	
 	      if (source == start){
 	    	textArea.setForeground(Color.BLACK);
-	        submit();
+	       
 	        Boolean err=false;
 	        Boolean errge=false;
 	        Boolean go=true;
-	        if(gs==-1){
+	        Boolean miss=true; 
+	        if (npf.getText().isEmpty()|npr.getText().isEmpty()|(loft!=1&lp.getText().isEmpty())|folder.getText().isEmpty()){
+	        	miss=true;
 	        	JFrame opf=new JFrame();
-	 	        String[] ops= {"Proceed?","Cancel"};
+	 			JOptionPane.showMessageDialog(opf,"Some fields are empty!","Warning", JOptionPane.ERROR_MESSAGE);
+	        	
+	        }else{
+	        	miss=false;
+	        }
+	        submit();
+	        
+	        if(gs==-1&!miss){
+	        	JFrame opf=new JFrame();
+	 	        String[] ops= {"Proceed!","Cancel"};
 	 			int opt=JOptionPane.showOptionDialog(opf,"Each sequence may took \nat least 3 mins to complete.","Everything correct?",
 	 					JOptionPane.YES_NO_OPTION,
 	 					JOptionPane.INFORMATION_MESSAGE, 
@@ -287,7 +306,8 @@ class FrameLayout extends JFrame implements ActionListener{
 	 				go=false;
 	 			}
 	        }
-	        if(go){
+	        
+	        if(go&!miss){
 	        	r.eval("catch= tryCatch( { source('./RScripts/CreatingFolders.R') }, error=function(e){e} )");
 	 	    	REXP rcatch= r.eval("catch%>%as.character()");
 	 	    	String rcatchs=((REXP)rcatch).asString();
@@ -299,7 +319,7 @@ class FrameLayout extends JFrame implements ActionListener{
 	 	    		output("Creating Folders..."); newoutput("Done!");
 	 	    	}
 	 	        
-	 	    	if(!err){
+	 	    	if(!err&priuse==1){
 	 	    		r.eval("catch= tryCatch( { source('./RScripts/PrimerAnalyzing.R') }, error=function(e){e} )");
 	 	 	    	rcatch= r.eval("catch%>%as.character()");
 	 	 	    	rcatchs=((REXP)rcatch).asString();
@@ -335,6 +355,7 @@ class FrameLayout extends JFrame implements ActionListener{
 	 	 	    	if(rcatchs.indexOf("Error")>=0){
 	 	 	    		textArea.setForeground(Color.RED);
 	 	 	    		newoutput(rcatchs);
+	 	 	    		newoutput("Suffix not found!");
 	 	 	    		err=true;
 	 	 	    	}else{
 	 	 	    		output("Renaming..."); newoutput("Done!");
@@ -354,7 +375,7 @@ class FrameLayout extends JFrame implements ActionListener{
 	 	 	    	}
 	 	    	}
 	 			
-	 	    	if(!err){
+	 	    	if(!err&priuse==1){
 	 	    		r.eval("catch= tryCatch( { source('../../../RScripts/CandidateSequence.R') }, error=function(e){e} )");
 	 	 	    	rcatch= r.eval("catch%>%as.character()");
 	 	 	    	rcatchs=((REXP)rcatch).asString();
@@ -365,8 +386,19 @@ class FrameLayout extends JFrame implements ActionListener{
 	 	 	    	}else{
 	 	 	    		output("Candidate Sequences Evaluating..."); newoutput("Done!");
 	 	 	    	}
+	 	    	}else if(!err&priuse==-1){
+	 	    		r.eval("catch= tryCatch( { source('../../../RScripts/VectorRemoved.R') }, error=function(e){e} )");
+	 	 	    	rcatch= r.eval("catch%>%as.character()");
+	 	 	    	rcatchs=((REXP)rcatch).asString();
+	 	 	    	if(rcatchs.indexOf("Error")>=0){
+	 	 	    		textArea.setForeground(Color.RED);
+	 	 	    		newoutput(rcatchs);;
+	 	 	    		err=true;
+	 	 	    	}else{
+	 	 	    		output("Candidate Sequences Evaluating..."); newoutput("Done!");
+	 	 	    	}
 	 	    	}
-	 			
+	 	    	
 	 	    	if(!err){
 	 	    		r.eval("catch= tryCatch( { source('../../../RScripts/SequenceAlignment.R') }, error=function(e){e} )");
 	 	 	    	rcatch= r.eval("catch%>%as.character()");
@@ -431,15 +463,21 @@ class FrameLayout extends JFrame implements ActionListener{
 	 			r.eval("hrre=t%%3600");
 	 			r.eval("min=hrre%/%60");
 	 			r.eval("sec=hrre%%60");
-	 			REXP time=r.eval("paste0('It tooks ', hr, ' hour ', min, ' minute ', sec%>%round(2), ' second to complete.' )");
+	 			REXP time=r.eval("paste0('It took ', hr, ' hour ', min, ' minute ', sec%>%round(2), ' second to complete.' )");
 	 			String newtime=((REXP)time).asString();		
 	 			newoutput(newtime);
 	 			newoutput("");
 	 		  	newoutput("");
+	 		  	
+	 			
 	 		  	if(!err& !errge){
-	 		  		textArea.setForeground(Color.BLUE);
+	 		  		textArea.setForeground(Color.BLUE); 	   
+	 		        JFrame opf2=new JFrame();
+	 		        JOptionPane.showMessageDialog(opf2,"It's done!","Congratulation", JOptionPane.PLAIN_MESSAGE);
 	 		  	} else if(!err& errge){
-	 		  		textArea.setForeground(Color.PINK);
+	 		  		textArea.setForeground(Color.PINK);		  		
+	 		  		JFrame opf3=new JFrame();
+	 		        JOptionPane.showMessageDialog(opf3,"Something wrong","Oops", JOptionPane.ERROR_MESSAGE);
 	 		  	}
 	        } 	
 	      }else if (source == load){
@@ -558,8 +596,8 @@ class FrameLayout extends JFrame implements ActionListener{
 	    	ff.setResizable(false);
 		  }else if (source == update){
 			  JFrame opf=new JFrame();
-			  String[] ops= {"Proceed?","Cancel"};
-			  int opt=JOptionPane.showOptionDialog(opf,"It may took 3 hours\n to complete at least","Everything correct?",
+			  String[] ops= {"Proceed!","Cancel"};
+			  int opt=JOptionPane.showOptionDialog(opf,"It may take at least\n5.5 hours to complete.","Everything correct?",
                       JOptionPane.YES_NO_OPTION,
                       JOptionPane.INFORMATION_MESSAGE, 
                       null, ops, "pokok");
@@ -634,20 +672,23 @@ class FrameLayout extends JFrame implements ActionListener{
 						r.eval("hrre=t%%3600");
 						r.eval("min=hrre%/%60");
 						r.eval("sec=hrre%%60");
-						REXP time=r.eval("paste0('It tooks ', hr, ' hour ', min, ' minute ', sec%>%round(2), ' second to complete.' )");
+						REXP time=r.eval("paste0('It took ', hr, ' hour ', min, ' minute ', sec%>%round(2), ' second to complete.' )");
 						String newtime=((REXP)time).asString();		
 						newoutput(newtime);
 						newoutput("");
 					  	newoutput("");
 					  	textArea.setForeground(Color.BLUE);
+					  	JFrame opf2=new JFrame();
+		 		        JOptionPane.showMessageDialog(opf2,"It's done!","Congratulation", JOptionPane.PLAIN_MESSAGE);
+		 		  		
 				    	r.eval("setwd(desdir)");
 		 	    	}	    	
 			  }
 			  
 		  }else if (source == blast){
 			  JFrame opf=new JFrame();
-			  String[] ops= {"Proceed?","Cancel"};
-			  int opt=JOptionPane.showOptionDialog(opf,"Each sequence may took \nat least 3 mins to complete.","Everything correct?",
+			  String[] ops= {"Proceed!","Cancel"};
+			  int opt=JOptionPane.showOptionDialog(opf,"Each sequence may take \nat least 3 mins to complete.","Everything correct?",
                       JOptionPane.YES_NO_OPTION,
                       JOptionPane.INFORMATION_MESSAGE, 
                       null, ops, "pokok");
@@ -667,10 +708,23 @@ class FrameLayout extends JFrame implements ActionListener{
 			 	    	}else{
 			 	    		output("BLAST...."); newoutput("Done!");
 			 	    		textArea.setForeground(Color.BLUE);
+			 	    		JFrame opf2=new JFrame();
+			 		        JOptionPane.showMessageDialog(opf2,"It's done!","Congratulation", JOptionPane.PLAIN_MESSAGE);
 			 	    		break;
 			 	    	}
 					}
 			  }		       
+		  }else if (source == primeruse){
+			  priuse=priuse*(-1);
+			  if(priuse==-1){
+				  setpri.setEnabled(false);
+				  pf.setEnabled(false);
+				  pr.setEnabled(false);
+			  }else{
+				  setpri.setEnabled(true);
+				  pf.setEnabled(true);
+				  pr.setEnabled(true);				  
+			  }
 		  }
 	}
 	
